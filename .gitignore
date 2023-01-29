@@ -3,3 +3,4 @@
 .vscode
 .github
 .DS_Store
+postgres-data
