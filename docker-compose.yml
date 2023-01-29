@@ -1,0 +1,96 @@
+version: '3.8'
+services:
+  hapi-fhir:
+    image: "hapiproject/hapi:latest"
+    depends_on:
+      - hapi-db
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./hapi-config:/data/hapi
+    environment:
+      SPRING_CONFIG_LOCATION: 'file:///data/hapi/application.yaml'
+      SPRING_DATASOURCE_URL: 'jdbc:postgresql://hapi-db:5432/root'
+      SPRING_DATASOURCE_USERNAME: 'root'
+      SPRING_DATASOURCE_PASSWORD: 'hapifhir2023'
+      SPRING_DATASOURCE_DRIVERCLASSNAME: 'org.postgresql.Driver'
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: 'ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgres94Dialect'
+
+  hapi-db:
+    image: "postgres:14.6"
+    restart: always
+    ports:
+    - "6000:5432"
+    user: root
+    environment:
+      POSTGRES_DB: "root"
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "hapifhir2023"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+    container_name: elasticsearch
+    environment:
+      - node.name=snowstorm
+      - cluster.name=snowstorm-cluster
+      - cluster.initial_master_nodes=snowstorm
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    volumes:
+      - elastic:/usr/share/elasticsearch/data
+    networks:
+      elastic:
+        aliases:
+          - es
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://es:9200" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    ports:
+      - 127.0.0.1:9200:9200
+    mem_reservation: 4g
+
+
+  snowstorm:
+    image: snomedinternational/snowstorm:latest
+    container_name: snowstorm
+    restart: always
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    entrypoint: java -Xms2g -Xmx4g -jar snowstorm.jar --elasticsearch.urls=http://es:9200
+    networks:
+      elastic:
+        aliases:
+          - snowstorm
+    ports:
+      - 8081:8080
+
+  snowstorm-browser:
+    image: snomedinternational/snomedct-browser:latest
+    container_name: browser
+    depends_on:
+      - snowstorm
+    links:
+      - snowstorm:snowstorm
+    networks:
+      - elastic
+    environment:
+      - API_HOST=http://snowstorm:8080/
+    ports:
+      - 8082:80
+    restart: always
+
+
+networks:
+  elastic:
+
+volumes:
+  elastic:
