@@ -19,8 +19,6 @@ services:
   hapi-db:
     image: "postgres:14.6"
     restart: always
-    ports:
-    - "6000:5432"
     user: root
     environment:
       POSTGRES_DB: "root"
@@ -43,7 +41,7 @@ services:
       - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       - discovery.type=single-node
     volumes:
-      - elastic:/usr/share/elasticsearch/data
+      - ./elastic:/usr/share/elasticsearch/data
     networks:
       elastic:
         aliases:
@@ -65,7 +63,6 @@ services:
     depends_on:
       elasticsearch:
         condition: service_healthy
-
     entrypoint: java -Xms2g -Xmx4g -jar snowstorm.jar --elasticsearch.urls=http://es:9200 --delete-indices --import=/snomed/SnomedCT_IPSTerminologyRelease.zip
     networks:
       elastic:
@@ -74,7 +71,7 @@ services:
     volumes:
       - ./snomed:/snomed
     ports:
-      - 8081:8080
+      - 8000:8080
 
   snowstorm-browser:
     image: snomedinternational/snomedct-browser:latest
@@ -92,8 +89,51 @@ services:
     restart: always
 
 
+  openhim-mongo-db:
+    container_name: openhim-mongo-db
+    image: mongo:4.0
+    networks:
+      - openhim
+    volumes:
+      - "./mongo-data:/data/db"
+    restart: unless-stopped
+
+  openhim-core:
+    container_name: openhim-core
+    image: jembi/openhim-core:v7.1.0
+    restart: unless-stopped
+    environment:
+      mongo_url: "mongodb://openhim-mongo-db/openhim-development"
+      mongo_atnaUrl: "mongodb://openhim-mongo-db/openhim-development"
+      NODE_ENV: "development"
+    ports:
+      - "8080:8080"
+      - "8084:5000"
+      - "8085:5001"
+    networks:
+      - openhim
+    healthcheck:
+      test: "curl -sSk https://openhim-core:8080/heartbeat || exit 1"
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  openhim-console:
+    container_name: openhim-console
+    image: jembi/openhim-console:v1.15.0
+    restart: unless-stopped
+    networks:
+      - openhim
+    ports:
+      - "8086:80"
+    healthcheck:
+      test: "curl -sS http://openhim-console || exit 1"
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+
 networks:
   elastic:
+  openhim:
 
-volumes:
-  elastic:
