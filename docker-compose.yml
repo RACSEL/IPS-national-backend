@@ -107,13 +107,13 @@ services:
       mongo_atnaUrl: "mongodb://openhim-mongo-db/openhim-development"
       NODE_ENV: "development"
     ports:
-      - "8080:8080"
+      - "8083:8080"
       - "8084:5000"
       - "8085:5001"
     networks:
       - openhim
     healthcheck:
-      test: "curl -sSk https://openhim-core:8080/heartbeat || exit 1"
+      test: "curl -sSk https://openhim-core:8083/heartbeat || exit 1"
       interval: 30s
       timeout: 30s
       retries: 3
