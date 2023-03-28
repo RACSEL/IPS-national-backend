@@ -8,6 +8,8 @@ services:
       - "8080:8080"
     volumes:
       - ./hapi-config:/data/hapi
+    networks:
+      - ddcc-net
     environment:
       SPRING_CONFIG_LOCATION: 'file:///data/hapi/application.yaml'
       SPRING_DATASOURCE_URL: 'jdbc:postgresql://hapi-db:5432/root'
@@ -137,7 +139,7 @@ services:
     networks:
       - ddcc-net
     environment:
-      FHIR_SERVER: 'http://localhost:8080'
+      FHIR_SERVER: 'http://hapi-fhir:8080/fhir/'
       MATCHBOX_SERVER: 'http://resource-generation-service:8080/fhir/'
       PRIVATE_KEY_FILE: '/app/cert-data/priv.pem'
     volumes:
@@ -158,5 +160,3 @@ services:
 networks:
   elastic:
   ddcc-net:
-    external: false
-    name: ddcc-net
