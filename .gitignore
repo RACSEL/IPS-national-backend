@@ -5,3 +5,8 @@
 .DS_Store
 postgres-data
 snomed/elastic
+
+*.pem
+*.cer
+*.key
+*.p8

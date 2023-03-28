@@ -137,11 +137,11 @@ services:
     networks:
       - ddcc-net
     environment:
-      FHIR_SERVER: 'http://hapi-fhir:8080'
+      FHIR_SERVER: 'http://localhost:8080'
       MATCHBOX_SERVER: 'http://resource-generation-service:8080/fhir/'
       PRIVATE_KEY_FILE: '/app/cert-data/priv.pem'
     volumes:
-      - ./../cert-data:/app/cert-data
+      - ./cert-data:/app/cert-data
     ports:
       - "4321:4321"
     depends_on:
