@@ -29,6 +29,9 @@ $ docker-compose up -d
 If you need to change any of the default value, you can edit `docker-compose.yml`. In the case of the FHIR server, 
 to see the available environment variables you can pass see `hapi-config/application.yaml`.
 
+You need to provide a private key in the directory `cert-data` in PEM format. See the cert-data README for more information.  
+
+
 ### Testing
 
 * Check whether the HAPI FHIR server is running in `http://localhost:8080` 
