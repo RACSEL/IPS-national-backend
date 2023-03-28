@@ -41,7 +41,7 @@ services:
       - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       - discovery.type=single-node
     volumes:
-      - ./elastic:/usr/share/elasticsearch/data
+      - ./elastic:/var/lib/elasticsearch/data
     networks:
       elastic:
         aliases:
@@ -157,7 +157,6 @@ services:
 
 networks:
   elastic:
-  openhim:
   ddcc-net:
     external: false
     name: ddcc-net
