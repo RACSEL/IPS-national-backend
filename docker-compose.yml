@@ -88,52 +88,76 @@ services:
       - 8082:80
     restart: always
 
+  # openhim-mongo-db:
+  #   container_name: openhim-mongo-db
+  #   image: mongo:4.0
+  #   networks:
+  #     - openhim
+  #   volumes:
+  #     - "./mongo-data:/data/db"
+  #   restart: unless-stopped
 
-  openhim-mongo-db:
-    container_name: openhim-mongo-db
-    image: mongo:4.0
+  # openhim-core:
+  #   container_name: openhim-core
+  #   image: jembi/openhim-core:v7.1.0
+  #   restart: unless-stopped
+  #   environment:
+  #     mongo_url: "mongodb://openhim-mongo-db/openhim-development"
+  #     mongo_atnaUrl: "mongodb://openhim-mongo-db/openhim-development"
+  #     NODE_ENV: "development"
+  #   ports:
+  #     - "8083:8080"
+  #     - "8084:5000"
+  #     - "8085:5001"
+  #   networks:
+  #     - openhim
+  #   healthcheck:
+  #     test: "curl -sSk https://openhim-core:8083/heartbeat || exit 1"
+  #     interval: 30s
+  #     timeout: 30s
+  #     retries: 3
+
+  # openhim-console:
+  #   container_name: openhim-console
+  #   image: jembi/openhim-console:v1.15.0
+  #   restart: unless-stopped
+  #   networks:
+  #     - openhim
+  #   ports:
+  #     - "8086:80"
+  #   healthcheck:
+  #     test: "curl -sS http://openhim-console || exit 1"
+  #     interval: 30s
+  #     timeout: 30s
+  #     retries: 3
+
+  ddcc:
+    container_name: ddcc-transactions-mediator
+    image: censcl/ops-ddcc-transactions-mediator:latest
     networks:
-      - openhim
-    volumes:
-      - "./mongo-data:/data/db"
-    restart: unless-stopped
-
-  openhim-core:
-    container_name: openhim-core
-    image: jembi/openhim-core:v7.1.0
-    restart: unless-stopped
+      - ddcc-net
     environment:
-      mongo_url: "mongodb://openhim-mongo-db/openhim-development"
-      mongo_atnaUrl: "mongodb://openhim-mongo-db/openhim-development"
-      NODE_ENV: "development"
+      FHIR_SERVER: 'http://hapi-fhir:8080'
+      MATCHBOX_SERVER: 'http://resource-generation-service:8080/fhir/'
+      PRIVATE_KEY_FILE: '/app/cert-data/priv.pem'
+    volumes:
+      - ./../cert-data:/app/cert-data
     ports:
-      - "8083:8080"
-      - "8084:5000"
-      - "8085:5001"
-    networks:
-      - openhim
-    healthcheck:
-      test: "curl -sSk https://openhim-core:8083/heartbeat || exit 1"
-      interval: 30s
-      timeout: 30s
-      retries: 3
+      - "4321:4321"
+    depends_on:
+      - resource-generation-service
 
-  openhim-console:
-    container_name: openhim-console
-    image: jembi/openhim-console:v1.15.0
-    restart: unless-stopped
+  resource-generation-service:
+    container_name: resource-generation-service
+    image: censcl/ops-ddcc-resource-generation-service:v1.0
     networks:
-      - openhim
+      - ddcc-net
     ports:
-      - "8086:80"
-    healthcheck:
-      test: "curl -sS http://openhim-console || exit 1"
-      interval: 30s
-      timeout: 30s
-      retries: 3
-
+        - "8023:8080"
 
 networks:
   elastic:
   openhim:
-
+  ddcc-net:
+    external: false
+    name: ddcc-net
