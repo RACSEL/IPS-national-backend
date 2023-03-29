@@ -7,6 +7,7 @@ The services created by the compose are:
  - Elastic Search (Used by Snowstorm) 
  - Snowstorm (SNOMED CT Terminology server)
  - Snowstorm Browser (Web UI for Snowstorm)
+ - LACPass IPS Viewer
  - DDCC Mediator and service
 
 > **Note**:
@@ -45,5 +46,7 @@ You need to provide a private key in the directory `cert-data` in PEM format. Se
 * Test creating an DDCC resource using the provided service. For example use this command
 
       curl -i -X POST http://localhost:4321/ddcc -H "Content-Type: application/json" -d examples/ddcc-sample-1.json  
+
+* Check out the LACPass IPS Viewer running in `http://localhost:8085`. You can input IPS json directly or querying the HAPI FHIR server. 
 
 In all cases, replace `localhost` with your server IP if needed.
