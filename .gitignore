@@ -11,3 +11,4 @@ mongo-data
 *.cer
 *.key
 *.p8
+elastic
