@@ -4,17 +4,19 @@ services:
     image: "hapiproject/hapi:latest"
     depends_on:
       - hapi-db
-    ports:
-      - "8080:8080"
     volumes:
       - ./hapi-config:/data/hapi
+    ports:
+      - "8080:8080"
     environment:
       SPRING_CONFIG_LOCATION: 'file:///data/hapi/application.yaml'
-      SPRING_DATASOURCE_URL: 'jdbc:postgresql://hapi-db:5432/root'
+      SPRING_DATASOURCE_URL: 'jdbc:postgresql://hapi-db:5433/root'
       SPRING_DATASOURCE_USERNAME: 'root'
       SPRING_DATASOURCE_PASSWORD: 'hapifhir2023'
       SPRING_DATASOURCE_DRIVERCLASSNAME: 'org.postgresql.Driver'
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: 'ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgres94Dialect'
+    networks:
+      elastic:
 
   hapi-db:
     image: "postgres:14.6"
@@ -28,9 +30,27 @@ services:
       - ./postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready" ]
-      interval: 10s
-      timeout: 5s
+      interval: 20s
+      timeout: 10s
       retries: 5
+    command: -p 5433
+    networks:
+          elastic:
+
+  hapi-fhir-bundle-signer:
+    build:
+      context: ./bundle-signer
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: "production"
+      PROD_HAPI_FHIR: "http://host.docker.internal:8080/fhir"
+      PROD_PRIVATE_KEY_FILE: "./static/key.pem"
+    volumes:
+      - ./bundle-signer/static:/usr/src/app/static
+    networks:
+      elastic:
+
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
