@@ -5,8 +5,10 @@
 .DS_Store
 postgres-data
 snomed/elastic
+mongo-data
 
 *.pem
 *.cer
 *.key
 *.p8
+elastic
