@@ -43,11 +43,11 @@ You need to provide a private key in the directory `cert-data` in PEM format. Se
 
 * Test creating an IPS resource directly using the bundle endpoint. For example use this command
 
-      curl -i -X POST http://localhost:8080/fhir/Bundle -H "Content-Type: application/json" -d examples/ips-sample-1.json
+      curl -i -X POST http://localhost:8080/fhir/Bundle -H "Content-Type: application/json" -d @examples/ips-sample-1.json
 
 * Test creating an DDCC resource using the provided service. For example use this command
 
-      curl -i -X POST http://localhost:4321/ddcc -H "Content-Type: application/json" -d examples/ddcc-sample-1.json  
+      curl -i -X POST http://localhost:4321/ddcc -H "Content-Type: application/json" -d @examples/ddcc-sample-1.json  
 
 * Check out the LACPass IPS Viewer running in `http://localhost:8085`. You can input IPS json directly or querying the HAPI FHIR server. 
 
