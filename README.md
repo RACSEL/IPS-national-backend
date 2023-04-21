@@ -9,6 +9,8 @@ The services created by the compose are:
  - Snowstorm Browser (Web UI for Snowstorm)
  - LACPass IPS Viewer
  - DDCC Mediator and service
+ - Bundle signer service
+ - MHD Transactions (in development)
 
 > **Note**:
 > The services require at least 8GB of ram to run.

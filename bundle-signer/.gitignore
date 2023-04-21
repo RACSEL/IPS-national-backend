@@ -3,3 +3,4 @@
 config.js
 cert.pem
 key.pem
+pnpm-lock.yaml
