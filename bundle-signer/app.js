@@ -8,6 +8,7 @@ const signature = require('./utils/signature');
 
 const env = process.env.NODE_ENV || 'development';
 
+const verifyRouter = require('./routes/verify');
 const hapiFhirRouter = require('./routes/hapi-fhir');
 const indexRouter = require('./routes/index');
 
@@ -20,11 +21,13 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 // Endpoints
+app.use('/verify', verifyRouter);
 app.use('/fhir', hapiFhirRouter);
 app.use('/*', indexRouter);
 
 // Set config variables
 app.set('hapiFhir', config[env]?.hapiFhir);
 app.set('privateKey', signature.privateKey);
+app.set('publicKey', signature.publicKey);
 
 module.exports = app;
