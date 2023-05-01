@@ -17,8 +17,8 @@ const router = express.Router();
  * @returns Signed body
  */
 function addSignature(body, privateKey) {
-  // Only sign bundles
-  if (body.resourceType !== 'Bundle') {
+  // Only sign bundles and bundle document
+  if (body.resourceType !== 'Bundle' && body.type !== 'document') {
     return body;
   }
   const sign = crypto.sign('SHA256', canonicalize(body), privateKey);
@@ -46,7 +46,7 @@ router.all('/Bundle', async (req, res) => {
   const FHIR_URL = req.app.get('hapiFhir');
   let url = `${FHIR_URL}/Bundle`;
   req.body = addSignature(req.body, req.app.get('privateKey'));
-  if (req.body?.type === 'document' && req.method == 'POST') {
+  if (req.body?.type === 'document' && req.method === 'POST') {
     // Convert the document to a transaction to force the creation of resources
     // This only will happen if a new Bundle is created, it does not work for PUT method
     // Add the document as an entry, so it is also created
