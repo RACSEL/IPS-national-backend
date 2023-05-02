@@ -1,7 +1,9 @@
 const express = require('express');
 const axios = require('axios');
 const crypto = require('crypto');
+const { v4: uuidv4 } = require("uuid");
 const canonicalize = require('../utils/canonicalize');
+const { createDocumentReference, createSubmissionSet } = require('../utils/transactions');
 
 const router = express.Router();
 
@@ -41,21 +43,41 @@ function addSignature(body, privateKey) {
   return Object.assign(body, { signature });
 }
 
-/* Bundle. */
+/* Provide Document ITI-65. */
 router.all('/Bundle', async (req, res) => {
   const FHIR_URL = req.app.get('hapiFhir');
   let url = `${FHIR_URL}/Bundle`;
   req.body = addSignature(req.body, req.app.get('privateKey'));
   if (req.body?.type === 'document' && req.method === 'POST') {
+    // Create a copy of the original Bundle IPS
+    const bundleIPS = Object.assign({}, req.body);
+
+    let docId = bundleIPS.id;
+    if(docId == null){
+      docId = uuidv4();
+      bundleIPS.id = docId;
+    }
+
     // Convert the document to a transaction to force the creation of resources
     // This only will happen if a new Bundle is created, it does not work for PUT method
     // Add the document as an entry, so it is also created
-    req.body.entry.push({
-      resource: JSON.parse(JSON.stringify(req.body)),
-      request: { method: req.method, url: 'Bundle' },
+    req.body.entry.forEach((e, index) => {
+      let url = e.resource.id ? `${e.resource.resourceType}/${e.resource.id}` : undefined;
+      // console.log(url);
+      req.body.entry[index].request = {
+        method: req.method,
+        url: url
+      };
+      if(url){
+        req.body.entry[index].fullUrl = url;
+      }
     });
-    req.body.entry.forEach((_, index) => {
-      req.body.entry[index].request.method = req.method;
+
+    // Add bundle to the entries
+    req.body.entry.push({
+      fullUrl:  "Bundle/" + docId,
+      resource: JSON.parse(JSON.stringify(bundleIPS)),
+      request: { method: "PUT", url: 'Bundle/' + docId },
     });
 
     if (req.method === 'POST') {
@@ -64,7 +86,16 @@ router.all('/Bundle', async (req, res) => {
       url = `${url}/${req.body.id}`;
     }
     req.body.type = 'transaction';
+
+    // Create Document Reference and SubmissionSet required for ITI-65 compliance
+    const docRefId = uuidv4();
+    req.body.entry.push(createDocumentReference(bundleIPS, docRefId, docId, FHIR_URL));
+    req.body.entry.push(createSubmissionSet(bundleIPS, docRefId, docId));
   }
+
+
+  //console.log(req.body);
+  // Send the request to the server
   axios.request(
     {
       url,
@@ -73,11 +104,16 @@ router.all('/Bundle', async (req, res) => {
       params: req.params,
     },
   ).then((response) => {
-    res.status(response.status).send(response.data);
+    // console.log(response.data);
+    res.status(response.status);
+    res.end(JSON.stringify(response.data));
   })
-    .catch((err) => {
-      res.status(err.response.status).send(err.response.data);
-    });
+  .catch((err) => {
+    console.log("ERROR");
+    console.error(err.response.data);
+    res.status(err.response.status);
+    res.end(JSON.stringify(err.response.data));
+  });
 });
 
 /* All requests will be passed to the FHIR server. */
@@ -85,7 +121,7 @@ router.all('/*', async (req, res) => {
   const FHIR_URL = req.app.get('hapiFhir');
   axios.request(
       {
-        url: 'http://lacpass.create.cl:8080',
+        url: FHIR_URL,
         method: req.method,
         data: req.body,
         params: req.params,
