@@ -85,7 +85,7 @@ Note that the parameter `patient.identifier` is defined with the value of the id
 
 #### ITI-67 - Find Document References
 
-Reference: https://profiles.ihe.net/ITI/MHD/ITI-66.html
+Reference: https://profiles.ihe.net/ITI/MHD/ITI-67.html
 
 This endpoint recieves a patient identifier and gives the list of document references for this patient.
 
@@ -98,7 +98,7 @@ Note that the parameter `patient.identifier` is defined with the value of the id
 
 #### ITI-68 - Provide Document
 
-Reference: https://profiles.ihe.net/ITI/MHD/ITI-66.html
+Reference: https://profiles.ihe.net/ITI/MHD/ITI-68.html
 
 This endpoint returns the IPS for a patient. The URL is retrtieved from the result of the ITI-67 request. Specifically the url will be in the `content > attachment > url` attribute of each entry.
 
