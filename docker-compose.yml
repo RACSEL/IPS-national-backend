@@ -15,8 +15,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: 'hapifhir2023'
       SPRING_DATASOURCE_DRIVERCLASSNAME: 'org.postgresql.Driver'
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: 'ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgres94Dialect'
-    networks:
-      elastic:
 
   hapi-db:
     image: "postgres:14.6"
@@ -34,9 +32,7 @@ services:
       timeout: 10s
       retries: 5
     command: -p 5433
-    networks:
-          elastic:
-
+    
   hapi-fhir-bundle-signer:
     build:
       context: ./bundle-signer
@@ -44,12 +40,10 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: "production"
-      PROD_HAPI_FHIR: "http://host.docker.internal:8080/fhir"
+      PROD_HAPI_FHIR: "http://hapi-fhir:8080/fhir"
       PROD_PRIVATE_KEY_FILE: "./static/key.pem"
     volumes:
       - ./bundle-signer/static:/usr/src/app/static
-    networks:
-      elastic:
 
 
   elasticsearch:
