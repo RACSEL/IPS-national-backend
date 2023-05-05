@@ -96,7 +96,7 @@ Example command:
 Note that the parameter `patient.identifier` is defined with the value of the identifier of the patient to be queried.
 
 
-#### ITI-68 - Provide Document
+#### ITI-68 - Retrieve Document
 
 Reference: https://profiles.ihe.net/ITI/MHD/ITI-68.html
 
