@@ -109,8 +109,6 @@ router.all('/Bundle', async (req, res) => {
     res.end(JSON.stringify(response.data));
   })
   .catch((err) => {
-    console.log("ERROR");
-    console.error(err.response.data);
     res.status(err.response.status);
     res.end(JSON.stringify(err.response.data));
   });
@@ -121,7 +119,7 @@ router.all('/*', async (req, res) => {
   const FHIR_URL = req.app.get('hapiFhir');
   axios.request(
       {
-        url: `${FHIR_URL}/${req.path}`,
+        url: `${FHIR_URL}${req.path}`,
         method: req.method,
         data: req.body,
         params: req.query,
