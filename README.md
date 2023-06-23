@@ -11,6 +11,7 @@ The services created by the compose are:
  - DDCC Mediator and service
  - Bundle signer service
  - IPS Mediator for MHD Transactions
+ - IPS to DDCC transformation operation
 
 > **Note**:
 > The services require at least 8GB of ram to run.
@@ -29,8 +30,9 @@ $ docker-compose up -d
 
 ### Configuration
 
-If you need to change any of the default value, you can edit `docker-compose.yml`. In the case of the FHIR server, 
-to see the available environment variables you can pass see `hapi-config/application.yaml`.
+If you need to change any of the default value, you can edit `docker-compose.yml`. In the case of the FHIR server, to see the available environment variables you can pass see `hapi-config/application.yaml`.
+
+In particular you should change the variable `EXTERNAL_HAPI_FHIR` to the actual public URL to the FHIR server.
 
 You need to provide a private key in the directory `cert-data` in PEM format. See the cert-data README for more information.  
 
@@ -105,3 +107,16 @@ This endpoint returns the IPS for a patient. The URL is retrtieved from the resu
 Example command:
 
     curl -i -X GET http://lacpass.create.cl:8080/fhir/Bundle/IPS-examples-Bundle-01?_format=json
+
+
+### Transformations
+
+The IPS mediator includes a FHIR operation called `$ddcc` to transforms IPS Bundles to DDCC documents.
+
+This is an example to use the transformation oepration:
+
+    curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$ddcc'
+
+Where `fb06a834-6b55-4ac3-a856-82489eb4d69d` is the id of the IPS Bundle. This endpoint returns the DDCC Bundle associated to the requested IPS.
+
+This transformation retrieves a previously stored IPS and checks whether the `Immunization` resource is present. The process extracts the information from the IPS to build the QuestionnaryResponse with the DDCC structure. This QuestionnarieResponse is sent to the DDCC module to generate the document.

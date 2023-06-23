@@ -27,6 +27,8 @@ app.use('/*', indexRouter);
 
 // Set config variables
 app.set('hapiFhir', config[env]?.hapiFhir);
+app.set('ddccURL', config[env]?.ddccURL);
+app.set('externalFhir', config[env]?.externalFhir);
 app.set('privateKey', signature.privateKey);
 app.set('publicKey', signature.publicKey);
 

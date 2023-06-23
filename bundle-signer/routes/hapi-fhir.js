@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const { v4: uuidv4 } = require("uuid");
 const canonicalize = require('../utils/canonicalize');
 const { createDocumentReference, createSubmissionSet } = require('../utils/transactions');
+const { buildDDCCQR } = require('../utils/ddcc');
 
 const router = express.Router();
 
@@ -45,7 +46,10 @@ function addSignature(body, privateKey) {
 
 /* Provide Document ITI-65. */
 router.all('/Bundle', async (req, res) => {
+  console.log("ITI-65");
   const FHIR_URL = req.app.get('hapiFhir');
+  const FHIR_EXTERNAL_URL = req.app.get('externalFhir');
+
   let url = `${FHIR_URL}/Bundle`;
   req.body = addSignature(req.body, req.app.get('privateKey'));
   if (req.body?.type === 'document' && req.method === 'POST') {
@@ -89,7 +93,7 @@ router.all('/Bundle', async (req, res) => {
 
     // Create Document Reference and SubmissionSet required for ITI-65 compliance
     const docRefId = uuidv4();
-    req.body.entry.push(createDocumentReference(bundleIPS, docRefId, docId, FHIR_URL));
+    req.body.entry.push(createDocumentReference(bundleIPS, docRefId, docId, FHIR_EXTERNAL_URL));
     req.body.entry.push(createSubmissionSet(bundleIPS, docRefId, docId));
   }
 
@@ -116,8 +120,43 @@ router.all('/Bundle', async (req, res) => {
   });
 });
 
+router.get("/Bundle/:id/([\$])ddcc", async (req, res) => {
+  console.log("TEST");
+  const FHIR_URL = req.app.get('hapiFhir');
+  const DDCC_URL = req.app.get('ddccURL');
+
+  const url = `${FHIR_URL}/Bundle/${req.params.id}`;
+  let ips = await axios.get(url);
+  ips = ips.data;
+  if(!ips){
+    res.status(400).send({"error": "IPS is empty or not valid"});
+    return;
+  }
+
+  let patient = ips.entry.find(e => e.resource && e.resource.resourceType == "Patient");
+  let immunization = ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization");
+
+  if(!patient || !immunization){
+    res.status(400).send({"error": "IPS has no patient or immunization"});
+    return;
+  }
+
+  patient = patient.resource;
+  immunization = immunization.resource;
+  console.log(patient, immunization);
+
+  let qr = buildDDCCQR(patient, immunization);
+  console.log(qr);
+
+  console.log(DDCC_URL);
+  let resp = await axios.post(DDCC_URL, qr);
+  res.status(resp.status).send(resp.data);
+
+});
+
 /* All requests will be passed to the FHIR server. */
 router.all('/*', async (req, res) => {
+  console.log("forward");
   const FHIR_URL = req.app.get('hapiFhir');
   axios.request(
       {
