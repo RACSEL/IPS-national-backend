@@ -111,7 +111,7 @@ Example command:
 
 ### Transformations
 
-The IPS mediator includes a FHIR operation called `$ddcc` to transforms IPS Bundles to DDCC documents. It is mandatory for the operation to work that the stored IPS have at least one `Immunization` resource.
+The IPS mediator includes a FHIR operation called `$ddcc` which transforms IPS Bundles to DDCC documents. It is mandatory for this operation to work that the stored IPS have at least one `Immunization` resource.
 
 This is an example to use the transformation oepration:
 

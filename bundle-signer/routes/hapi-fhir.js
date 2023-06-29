@@ -135,17 +135,19 @@ router.get("/Bundle/:id/([\$])ddcc", async (req, res) => {
 
   let patient = ips.entry.find(e => e.resource && e.resource.resourceType == "Patient");
   let immunization = ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization");
+  let organization = ips.entry.find(e => e.resource && e.resource.resourceType == "Organization");
 
-  if(!patient || !immunization){
-    res.status(400).send({"error": "IPS has no patient or immunization"});
+  if(!patient || !immunization || !organization){
+    res.status(400).send({"error": "IPS has no patient or immunization or organization"});
     return;
   }
 
   patient = patient.resource;
   immunization = immunization.resource;
+  organization = organization.resource;
   console.log(patient, immunization);
 
-  let qr = buildDDCCQR(patient, immunization);
+  let qr = buildDDCCQR(patient, immunization, organization);
   console.log(qr);
 
   console.log(DDCC_URL);

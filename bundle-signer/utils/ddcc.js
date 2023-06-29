@@ -201,20 +201,34 @@ function addAnswer(qr, name, value){
 }
 
 
-function buildDDCCQR(patient, immunization){
+function buildDDCCQR(patient, immunization, organization){
     let qr = createQR();
     qr = addAnswer(qr, "name", patient["name"][0]["given"].join(" ") + " " + patient["name"][0]["family"]);
     qr = addAnswer(qr, "birthDate", patient["birthDate"]);
     qr = addAnswer(qr, "identifier", patient["identifier"][0]["value"]);
     qr = addAnswer(qr, "sex", patient["gender"]);
     qr = addAnswer(qr, "vaccine", immunization["vaccineCode"]["coding"][0]["code"]);
-    // qr = addAnswer(qr, "brand", null);
-    // qr = addAnswer(qr, "lot", null);
+    let ext = immunization["extension"] ? immunization["extension"].find(e => e["url"] == "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCEventBrand") : null;
+    if(ext && ext["valueCoding"] && ext["valueCoding"]["code"]){
+      qr = addAnswer(qr, "brand", ext["valueCoding"]["code"]);
+    }
+    qr = addAnswer(qr, "lot", immunization["lotNumber"]);
     qr = addAnswer(qr, "date", immunization["occurrenceDateTime"]);
     qr = addAnswer(qr, "dose", immunization["protocolApplied"] ? immunization["protocolApplied"][0]["doseNumberPositiveInt"] || 1 : 1);
-    // qr = addAnswer(qr, "country", patient["address"]["country"]);
+    
+    let ext2 = immunization["extension"] ? immunization["extension"].find(e => e["url"] == "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCCountryOfEvent") : null;
+    if(ext2 && ext2["valueCode"]){
+      qr = addAnswer(qr, "country", ext2["valueCode"]);
+    }
+    
     // qr = addAnswer(qr, "centre", null);
-    // qr = addAnswer(qr, "pha", null);
+    qr = addAnswer(qr, "pha", organization["id"]);
+
+    let ext3 = immunization["extension"] ? immunization["extension"].find(e => e["url"] == "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCVaccineMarketAuthorization") : null;
+    if(ext3 && ext3["valueCoding"] && ext3["valueCoding"]["code"]){
+      qr = addAnswer(qr, "ma_holder", ext3["valueCoding"]["code"]);
+    }
+
     // qr = addAnswer(qr, "ma_holder", null);
     qr = addAnswer(qr, "hcid", immunization["id"]);
     return qr 
