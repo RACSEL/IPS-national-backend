@@ -12,10 +12,10 @@ Npm ~v9.3.1
 
 ## Configutation
 
-First create a `config.json` file. We can copy the existing `./config/config.sample.json` file using:
+First create a `config.js` file. We can copy the existing `./config/config.sample.js` file using:
 
 ```bash
-$ cp ./config/config.sample.json ./config/config.json
+$ cp ./config/config.sample.js ./config/config.js
 ```
 
 You can check the available environment variables that are used in the [configuration file](./config/config.sample.js).
