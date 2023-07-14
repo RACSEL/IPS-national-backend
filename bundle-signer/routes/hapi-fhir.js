@@ -54,7 +54,7 @@ router.all('/Bundle', async (req, res) => {
   req.body = addSignature(req.body, req.app.get('privateKey'));
   if (req.body?.type === 'document' && req.method === 'POST') {
     // Create a copy of the original Bundle IPS
-    const bundleIPS = Object.assign({}, req.body);
+    const bundleIPS = JSON.parse(JSON.stringify(req.body));
 
     let docId = bundleIPS.id;
     if(docId == null){
