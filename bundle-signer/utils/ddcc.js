@@ -180,24 +180,27 @@ function createQR(){
 }
 
 function addAnswer(qr, name, value){
-    let i = qr.entry[0].resource.parameter[0].resource.item.findIndex(e => e["linkId"] == name);
-    let q = qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0];
-    if(q.valueString){
-        qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueString"] = value;
-        return qr;
-    }
-    if(q.valueDate){
-        qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueDate"] = value;
-        return qr;
-    }
-    if(q.valueInteger){
-        qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueInteger"] = value;
-        return qr;
-    }
-    if(q.valueCoding){
-        qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueCoding"]["code"] = value;
-        return qr;
-    }
+  if(value == null){
+    return qr;
+  }
+  let i = qr.entry[0].resource.parameter[0].resource.item.findIndex(e => e["linkId"] == name);
+  let q = qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0];
+  if(q.valueString){
+      qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueString"] = value;
+      return qr;
+  }
+  if(q.valueDate){
+      qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueDate"] = value;
+      return qr;
+  }
+  if(q.valueInteger){
+      qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueInteger"] = value;
+      return qr;
+  }
+  if(q.valueCoding){
+      qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueCoding"]["code"] = value;
+      return qr;
+  }
 }
 
 

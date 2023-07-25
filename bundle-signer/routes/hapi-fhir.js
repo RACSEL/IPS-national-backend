@@ -74,6 +74,7 @@ router.all('/Bundle', async (req, res) => {
       };
       if(url){
         req.body.entry[index].fullUrl = url;
+        bundleIPS.entry[index].fullUrl = url;
       }
     });
 
@@ -145,10 +146,10 @@ router.get("/Bundle/:id/([\$])ddcc", async (req, res) => {
   patient = patient.resource;
   immunization = immunization.resource;
   organization = organization.resource;
-  console.log(patient, immunization);
+  // console.log(patient, immunization);
 
   let qr = buildDDCCQR(patient, immunization, organization);
-  console.log(qr);
+  console.log(JSON.stringify(qr));
 
   console.log(DDCC_URL);
   let resp = await axios.post(DDCC_URL, qr);
