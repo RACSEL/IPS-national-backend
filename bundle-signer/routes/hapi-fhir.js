@@ -54,7 +54,7 @@ router.all('/Bundle', async (req, res) => {
   req.body = addSignature(req.body, req.app.get('privateKey'));
   if (req.body?.type === 'document' && req.method === 'POST') {
     // Create a copy of the original Bundle IPS
-    const bundleIPS = Object.assign({}, req.body);
+    const bundleIPS = JSON.parse(JSON.stringify(req.body));
 
     let docId = bundleIPS.id;
     if(docId == null){
@@ -74,6 +74,7 @@ router.all('/Bundle', async (req, res) => {
       };
       if(url){
         req.body.entry[index].fullUrl = url;
+        bundleIPS.entry[index].fullUrl = url;
       }
     });
 
@@ -134,6 +135,7 @@ router.get("/Bundle/:id/([\$])ddcc", async (req, res) => {
   let patient = ips.entry.find(e => e.resource && e.resource.resourceType == "Patient");
   let immunization = ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization");
   let organization = ips.entry.find(e => e.resource && e.resource.resourceType == "Organization");
+  let composition = ips.entry.find(e => e.resource && e.resource.resourceType == "Composition");
 
   if(!patient || !immunization || !organization){
     res.status(400).send({"error": "IPS has no patient or immunization or organization"});
@@ -143,10 +145,11 @@ router.get("/Bundle/:id/([\$])ddcc", async (req, res) => {
   patient = patient.resource;
   immunization = immunization.resource;
   organization = organization.resource;
-  console.log(patient, immunization);
+  composition = composition.resource;
+  // console.log(patient, immunization);
 
-  let qr = buildDDCCQR(patient, immunization, organization);
-  console.log(qr);
+  let qr = buildDDCCQR(patient, immunization, organization, composition);
+  console.log(JSON.stringify(qr));
 
   console.log(DDCC_URL);
   let resp = await axios.post(DDCC_URL, qr);

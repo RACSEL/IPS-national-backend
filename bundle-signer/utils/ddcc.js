@@ -180,28 +180,31 @@ function createQR(){
 }
 
 function addAnswer(qr, name, value){
-    let i = qr.entry[0].resource.parameter[0].resource.item.findIndex(e => e["linkId"] == name);
-    let q = qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0];
-    if(q.valueString){
-        qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueString"] = value;
-        return qr;
-    }
-    if(q.valueDate){
-        qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueDate"] = value;
-        return qr;
-    }
-    if(q.valueInteger){
-        qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueInteger"] = value;
-        return qr;
-    }
-    if(q.valueCoding){
-        qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueCoding"]["code"] = value;
-        return qr;
-    }
+  if(value == null){
+    return qr;
+  }
+  let i = qr.entry[0].resource.parameter[0].resource.item.findIndex(e => e["linkId"] == name);
+  let q = qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0];
+  if(q.valueString){
+      qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueString"] = value;
+      return qr;
+  }
+  if(q.valueDate){
+      qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueDate"] = value;
+      return qr;
+  }
+  if(q.valueInteger){
+      qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueInteger"] = value;
+      return qr;
+  }
+  if(q.valueCoding){
+      qr.entry[0].resource.parameter[0].resource.item[i]["answer"][0]["valueCoding"]["code"] = value;
+      return qr;
+  }
 }
 
 
-function buildDDCCQR(patient, immunization, organization){
+function buildDDCCQR(patient, immunization, organization, composition){
     let qr = createQR();
     qr = addAnswer(qr, "name", patient["name"][0]["given"].join(" ") + " " + patient["name"][0]["family"]);
     qr = addAnswer(qr, "birthDate", patient["birthDate"]);
@@ -222,7 +225,7 @@ function buildDDCCQR(patient, immunization, organization){
     }
     
     // qr = addAnswer(qr, "centre", null);
-    qr = addAnswer(qr, "pha", organization["id"]);
+    qr = addAnswer(qr, "pha", organization["name"]);
 
     let ext3 = immunization["extension"] ? immunization["extension"].find(e => e["url"] == "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCVaccineMarketAuthorization") : null;
     if(ext3 && ext3["valueCoding"] && ext3["valueCoding"]["code"]){
@@ -230,7 +233,7 @@ function buildDDCCQR(patient, immunization, organization){
     }
 
     // qr = addAnswer(qr, "ma_holder", null);
-    qr = addAnswer(qr, "hcid", immunization["id"]);
+    qr = addAnswer(qr, "hcid", composition["id"]);
     return qr 
 }
 
