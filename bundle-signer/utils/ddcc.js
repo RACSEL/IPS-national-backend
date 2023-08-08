@@ -204,7 +204,7 @@ function addAnswer(qr, name, value){
 }
 
 
-function buildDDCCQR(patient, immunization, organization){
+function buildDDCCQR(patient, immunization, organization, composition){
     let qr = createQR();
     qr = addAnswer(qr, "name", patient["name"][0]["given"].join(" ") + " " + patient["name"][0]["family"]);
     qr = addAnswer(qr, "birthDate", patient["birthDate"]);
@@ -225,7 +225,7 @@ function buildDDCCQR(patient, immunization, organization){
     }
     
     // qr = addAnswer(qr, "centre", null);
-    qr = addAnswer(qr, "pha", organization["id"]);
+    qr = addAnswer(qr, "pha", organization["name"]);
 
     let ext3 = immunization["extension"] ? immunization["extension"].find(e => e["url"] == "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCVaccineMarketAuthorization") : null;
     if(ext3 && ext3["valueCoding"] && ext3["valueCoding"]["code"]){
@@ -233,7 +233,7 @@ function buildDDCCQR(patient, immunization, organization){
     }
 
     // qr = addAnswer(qr, "ma_holder", null);
-    qr = addAnswer(qr, "hcid", immunization["id"]);
+    qr = addAnswer(qr, "hcid", composition["id"]);
     return qr 
 }
 
