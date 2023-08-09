@@ -45,14 +45,22 @@ function addSignature(body, privateKey) {
 }
 
 async function validateIPS(ips){
-  let val = await axios.request({
-      url: "http://lacpass.create.cl:5002/api/ips-validator",
-      method: "POST",
-      data: {
-        ips: ips
-      }
-  });
-  return val.data;
+  try {
+    let val = await axios.request({
+        url: "http://lacpass.create.cl:5002/api/ips-validator",
+        method: "POST",
+        data: {
+          ips: ips
+        }
+    });
+    return val.data;
+  }
+  catch(e){
+    return {
+      validate: false,
+      error: "Request body is not a valid IPS"
+    };
+  }
 }
 
 
