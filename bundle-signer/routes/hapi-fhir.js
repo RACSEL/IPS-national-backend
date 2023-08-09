@@ -44,11 +44,30 @@ function addSignature(body, privateKey) {
   return Object.assign(body, { signature });
 }
 
+async function validateIPS(ips){
+  let val = await axios.request({
+      url: "http://lacpass.create.cl:5002/api/ips-validator",
+      method: "POST",
+      data: {
+        ips: ips
+      }
+  });
+  return val.data;
+}
+
+
 /* Provide Document ITI-65. */
 router.all('/Bundle', async (req, res) => {
   console.log("ITI-65");
   const FHIR_URL = req.app.get('hapiFhir');
   const FHIR_EXTERNAL_URL = req.app.get('externalFhir');
+
+  let validation = await validateIPS(req.body);
+  if(validation.validate == false){
+    res.status(400);
+    res.end(JSON.stringify(validation));
+    return;
+  }
 
   let url = `${FHIR_URL}/Bundle`;
   req.body = addSignature(req.body, req.app.get('privateKey'));
