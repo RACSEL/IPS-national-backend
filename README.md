@@ -14,7 +14,7 @@ The services created by the compose are:
  - IPS to DDCC transformation operation
 
 > **Note**:
-> The services require at least 8GB of ram to run.
+> The services require at least 12GB of ram to run.
 
 ## Requirements
 
@@ -124,3 +124,12 @@ This transformation retrieves a previously stored IPS and checks whether the `Im
 Optionally, if the IPS has more than one `Immunization` resource, you can pass the query argument `immunizationId` to specify the id of the `Immunization` resource tto transform. For example:
 
     curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$ddcc?immunizationId=6fef12e7-64ad-4792-b2ad-5d6b699588fc'
+### LACCHAIN SETUP AND ONBOARD HELPER ###
+
+In the folder `lacchain-client-helper` you will find a shell script called `client-helper` which will help you setup the lacpass-lacchain component before using it. You just need to run the script once.
+
+```sh
+ cd lacchain-setup-helper
+ chmod +x client-helper.sh
+```
+**important** : Execute the script in a bash terminal.
