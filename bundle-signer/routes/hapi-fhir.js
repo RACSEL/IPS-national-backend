@@ -73,12 +73,14 @@ router.all('/Bundle', async (req, res) => {
   let validation = await validateIPS(req.body);
   if(validation.validate == false){
     res.status(400);
-    res.end(JSON.stringify(validation));
+    res.send(validation);
     return;
   }
 
   let url = `${FHIR_URL}/Bundle`;
   req.body = addSignature(req.body, req.app.get('privateKey'));
+  const originalBundleIPS = JSON.parse(JSON.stringify(req.body));
+
   if (req.body?.type === 'document' && req.method === 'POST') {
     // Create a copy of the original Bundle IPS
     const bundleIPS = JSON.parse(JSON.stringify(req.body));
@@ -138,13 +140,24 @@ router.all('/Bundle', async (req, res) => {
   ).then((response) => {
     // console.log(response.data);
     res.status(response.status);
-    res.end(JSON.stringify(response.data));
+    res.send(response.data);
+
+    // const bundleIPS = JSON.parse(JSON.stringify(req.body));
+    let docId = response.data.entry[response.data.entry.length - 3].response.location.split("/")[1];
+    originalBundleIPS.id = docId;
+    console.log(`${FHIR_URL}/Bundle/${docId}`);
+    axios.request({
+      url: `${FHIR_URL}/Bundle/${docId}`,
+      method: "PUT",
+      data: originalBundleIPS
+    });
+
   })
   .catch((err) => {
     console.log("ERROR");
-    console.error(err.response.data);
+    console.error(err);
     res.status(err.response.status);
-    res.end(JSON.stringify(err.response.data));
+    res.end(err.response.data);
   });
 });
 
@@ -161,13 +174,19 @@ router.get("/Bundle/:id/([\$])ddcc", async (req, res) => {
     return;
   }
 
+  let { immunizationId, organizationId } = req.query;
+
   let patient = ips.entry.find(e => e.resource && e.resource.resourceType == "Patient");
-  let immunization = ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization");
-  let organization = ips.entry.find(e => e.resource && e.resource.resourceType == "Organization");
+  let immunization = immunizationId ? 
+    ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization" && e.id == immunizationId) :
+    ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization");
+  let organization = organizationId ? 
+    ips.entry.find(e => e.resource && e.resource.resourceType == "Organization" && e.id == organizationId) :
+    ips.entry.find(e => e.resource && e.resource.resourceType == "Organization");
   let composition = ips.entry.find(e => e.resource && e.resource.resourceType == "Composition");
 
-  if(!patient || !immunization || !organization){
-    res.status(400).send({"error": "IPS has no patient or immunization or organization"});
+  if(!patient || !immunization || !organization || !composition){
+    res.status(400).send({"error": "IPS has no patient or immunization or organization or compoosition"});
     return;
   }
 
