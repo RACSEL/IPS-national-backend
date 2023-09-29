@@ -196,7 +196,7 @@ services:
 
   ####### LACCHAIN COMPONENT #########
   lacchain-postgres:
-    image: postgres:latest
+    image: postgres:15-bullseye
     ports:
       - "5440:5432"
     environment:
