@@ -44,14 +44,43 @@ function addSignature(body, privateKey) {
   return Object.assign(body, { signature });
 }
 
+async function validateIPS(ips){
+  try {
+    let val = await axios.request({
+        url: "http://lacpass.create.cl:5002/api/ips-validator",
+        method: "POST",
+        data: {
+          ips: ips
+        }
+    });
+    return val.data;
+  }
+  catch(e){
+    return {
+      validate: false,
+      error: "Request body is not a valid IPS"
+    };
+  }
+}
+
+
 /* Provide Document ITI-65. */
 router.all('/Bundle', async (req, res) => {
   console.log("ITI-65");
   const FHIR_URL = req.app.get('hapiFhir');
   const FHIR_EXTERNAL_URL = req.app.get('externalFhir');
 
+  let validation = await validateIPS(req.body);
+  if(validation.validate == false){
+    res.status(400);
+    res.send(validation);
+    return;
+  }
+
   let url = `${FHIR_URL}/Bundle`;
   req.body = addSignature(req.body, req.app.get('privateKey'));
+  const originalBundleIPS = JSON.parse(JSON.stringify(req.body));
+
   if (req.body?.type === 'document' && req.method === 'POST') {
     // Create a copy of the original Bundle IPS
     const bundleIPS = JSON.parse(JSON.stringify(req.body));
@@ -111,11 +140,22 @@ router.all('/Bundle', async (req, res) => {
   ).then((response) => {
     // console.log(response.data);
     res.status(response.status);
-    res.end(JSON.stringify(response.data));
+    res.send(response.data);
+
+    // const bundleIPS = JSON.parse(JSON.stringify(req.body));
+    let docId = response.data.entry[response.data.entry.length - 3].response.location.split("/")[1];
+    originalBundleIPS.id = docId;
+    console.log(`${FHIR_URL}/Bundle/${docId}`);
+    axios.request({
+      url: `${FHIR_URL}/Bundle/${docId}`,
+      method: "PUT",
+      data: originalBundleIPS
+    });
+
   })
   .catch((err) => {
-    res.status(err.response.status);
-    res.end(JSON.stringify(err.response.data));
+    console.error(err);
+    res.end(err.response.data);
   });
 });
 
@@ -132,13 +172,19 @@ router.get("/Bundle/:id/([\$])ddcc", async (req, res) => {
     return;
   }
 
+  let { immunizationId, organizationId } = req.query;
+
   let patient = ips.entry.find(e => e.resource && e.resource.resourceType == "Patient");
-  let immunization = ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization");
-  let organization = ips.entry.find(e => e.resource && e.resource.resourceType == "Organization");
+  let immunization = immunizationId ? 
+    ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization" && e.id == immunizationId) :
+    ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization");
+  let organization = organizationId ? 
+    ips.entry.find(e => e.resource && e.resource.resourceType == "Organization" && e.id == organizationId) :
+    ips.entry.find(e => e.resource && e.resource.resourceType == "Organization");
   let composition = ips.entry.find(e => e.resource && e.resource.resourceType == "Composition");
 
-  if(!patient || !immunization || !organization){
-    res.status(400).send({"error": "IPS has no patient or immunization or organization"});
+  if(!patient || !immunization || !organization || !composition){
+    res.status(400).send({"error": "IPS has no patient or immunization or organization or compoosition"});
     return;
   }
 

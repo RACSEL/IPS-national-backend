@@ -3,7 +3,7 @@
 .vscode
 .github
 .DS_Store
-postgres-data
+postgres-data*
 snomed/elastic
 mongo-data
 

@@ -211,7 +211,7 @@ function buildDDCCQR(patient, immunization, organization, composition){
     qr = addAnswer(qr, "identifier", patient["identifier"][0]["value"]);
     qr = addAnswer(qr, "sex", patient["gender"]);
     qr = addAnswer(qr, "vaccine", immunization["vaccineCode"]["coding"][0]["code"]);
-    let ext = immunization["extension"] ? immunization["extension"].find(e => e["url"] == "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCEventBrand") : null;
+    let ext = immunization["extension"] ? immunization["extension"].find(e => e["url"].indexOf("/StructureDefinition/DDCCEventBrand") >= 0) : null;
     if(ext && ext["valueCoding"] && ext["valueCoding"]["code"]){
       qr = addAnswer(qr, "brand", ext["valueCoding"]["code"]);
     }
@@ -219,7 +219,7 @@ function buildDDCCQR(patient, immunization, organization, composition){
     qr = addAnswer(qr, "date", immunization["occurrenceDateTime"]);
     qr = addAnswer(qr, "dose", immunization["protocolApplied"] ? immunization["protocolApplied"][0]["doseNumberPositiveInt"] || 1 : 1);
     
-    let ext2 = immunization["extension"] ? immunization["extension"].find(e => e["url"] == "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCCountryOfEvent") : null;
+    let ext2 = immunization["extension"] ? immunization["extension"].find(e => e["url"].indexOf("/StructureDefinition/DDCCCountryOfEvent") >= 0) : null;
     if(ext2 && ext2["valueCode"]){
       qr = addAnswer(qr, "country", ext2["valueCode"]);
     }
@@ -227,7 +227,7 @@ function buildDDCCQR(patient, immunization, organization, composition){
     // qr = addAnswer(qr, "centre", null);
     qr = addAnswer(qr, "pha", organization["name"]);
 
-    let ext3 = immunization["extension"] ? immunization["extension"].find(e => e["url"] == "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCVaccineMarketAuthorization") : null;
+    let ext3 = immunization["extension"] ? immunization["extension"].find(e => e["url"].indexOf("/StructureDefinition/DDCCVaccineMarketAuthorization") >= 0) : null;
     if(ext3 && ext3["valueCoding"] && ext3["valueCoding"]["code"]){
       qr = addAnswer(qr, "ma_holder", ext3["valueCoding"]["code"]);
     }
