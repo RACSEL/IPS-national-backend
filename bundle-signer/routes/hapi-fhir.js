@@ -178,10 +178,10 @@ router.get("/Bundle/:id/([\$])ddcc", async (req, res) => {
 
   let patient = ips.entry.find(e => e.resource && e.resource.resourceType == "Patient");
   let immunization = immunizationId ? 
-    ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization" && e.id == immunizationId) :
+    ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization" && (e.resource.id == immunizationId || e.fullUrl.indexOf(immunizationId) >=0)) :
     ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization");
   let organization = organizationId ? 
-    ips.entry.find(e => e.resource && e.resource.resourceType == "Organization" && e.id == organizationId) :
+    ips.entry.find(e => e.resource && e.resource.resourceType == "Organization" && (e.resource.id == organizationId || e.fullUrl.indexOf(organizationId) >= 0)) :
     ips.entry.find(e => e.resource && e.resource.resourceType == "Organization");
   let composition = ips.entry.find(e => e.resource && e.resource.resourceType == "Composition");
 
