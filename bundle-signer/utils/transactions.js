@@ -26,12 +26,12 @@ const postPDBEntry = (resourceType, tempId) => {
 const createDocumentReference = (bundleIPS, docRefId, docId, FHIR_URL) => {
     let entry = postPDBEntry("DocumentReference", docRefId)
     entry.resource.meta = {
-        profile: ["http://hl7.org/fhir/uv/ips/StructureDefinition/Bundle-uv-ips"]
+        profile: ["https://profiles.ihe.net/ITI/MHD/StructureDefinition/IHE.MHD.Minimal.DocumentReference"]
     }
     entry.resource.status = "current"
     let identifier = {
-        "system": "https://profiles.ihe.net/ITI/MHD/StructureDefinition/IHE.MHD.Comprehensive.DocumentReference",
-        "value": docId
+        "system": "urn:ietf:rfc:3986",
+        "value": "urn:uuid:" + docId
     }
     entry.resource.identifier = [identifier]
     entry.resource.masterIdentifier = identifier
@@ -41,7 +41,7 @@ const createDocumentReference = (bundleIPS, docRefId, docId, FHIR_URL) => {
         {
             attachment: {
                 contentType: "application/fhir+json",
-                url: FHIR_URL + "/Bundle/" + docId
+                url: FHIR_URL + "/Bundle/urn:uuid:" + docId
             }
         }
     ]
@@ -51,11 +51,22 @@ const createDocumentReference = (bundleIPS, docRefId, docId, FHIR_URL) => {
 const createSubmissionSet = (bundleIPS, docRefId, docId) => {
     let submissionSetId = uuidv4();
     let entry = postPDBEntry("List", submissionSetId);
+    entry.resource.meta = {
+      "profile": [
+        "https://profiles.ihe.net/ITI/MHD/StructureDefinition/IHE.MHD.Minimal.SubmissionSet"
+      ],
+      "security": [
+        {
+          "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+          "code": "HTEST"
+        }
+      ]
+    };
+
     entry.resource.extension = [
       {
-        url: "http://profiles.ihe.net/ITI/MHD/StructureDefinition/ihe-sourceId",
+        url: "https://profiles.ihe.net/ITI/MHD/StructureDefinition/ihe-sourceId",
         valueIdentifier: {
-          system: "origin",
           value: "LACPass"
         }
       }
@@ -63,13 +74,8 @@ const createSubmissionSet = (bundleIPS, docRefId, docId) => {
     entry.resource.identifier = [
       {
         use: "usual",
-        system: "https://profiles.ihe.net/ITI/MHD/StructureDefinition/IHE.MHD.Minimal.SubmissionSet",
-        value: submissionSetId
-      },
-      {
-        use: "official",
-        system: "https://profiles.ihe.net/ITI/MHD/StructureDefinition/IHE.MHD.Minimal.SubmissionSet",
-        value: submissionSetId
+        system: "urn:ietf:rfc:3986",
+        value: "urn:oid:" + submissionSetId
       }
     ]
     entry.resource.subject = bundleIPS.entry[0].resource.subject
@@ -78,7 +84,7 @@ const createSubmissionSet = (bundleIPS, docRefId, docId) => {
     entry.resource.code = {
       coding: [
         {
-          system: "http://profiles.ihe.net/ITI/MHD/CodeSystem/MHDlistTypes",
+          system: "https://profiles.ihe.net/ITI/MHD/CodeSystem/MHDlistTypes",
           code: "submissionset"
         }
       ]

@@ -178,29 +178,32 @@
           "id": "6fef12e7-64ad-4792-b2ad-5d6b699588fc",
           "meta": {
             "profile": [
-              "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCImmunization"
+              "http://lacpass.racsel.org/StructureDefinition/lac-immunization"
             ]
           },
           "extension": [
             {
-              "url": "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCEventBrand",
+              "url": "http://lacpass.racsel.org/StructureDefinition/DDCCEventBrand",
               "valueCoding": {
-                "system": "http://worldhealthorganization.github.io/ddcc/CodeSystem/DDCC-Example-Test-CodeSystem",
+                "system": "http://lacpass.racsel.org/CodeSystem/DDCC-Example-Test-CodeSystem",
                 "code": "XM4YL8"
               }
             },
             {
-              "url": "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCVaccineMarketAuthorization",
+              "url": "http://lacpass.racsel.org/StructureDefinition/DDCCVaccineMarketAuthorization",
               "valueCoding": {
-                "system": "http://worldhealthorganization.github.io/ddcc/CodeSystem/DDCC-Example-Test-CodeSystem",
+                "system": "http://lacpass.racsel.org/CodeSystem/DDCC-Example-Test-CodeSystem",
                 "code": "TEST"
               }
             },
             {
-              "url": "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCCountryOfEvent",
+              "url": "http://lacpass.racsel.org/StructureDefinition/DDCCCountryOfEvent",
               "valueCode": "CL"
             }
           ],
+          "location": {
+            "display": "Administration center"
+          },
           "status": "completed",
           "vaccineCode": {
             "coding": [
@@ -218,7 +221,21 @@
           "occurrenceDateTime": "2020-11-15",
           "protocolApplied": [
             {
-              "doseNumberPositiveInt": 1
+              "authority" : {
+                "reference" : "Organization/9d5f17f6-6537-4bbb-a883-a5937a79d10c"
+              },
+              "targetDisease" : [
+                {
+                  "coding" : [
+                    {
+                      "system" : "http://id.who.int/icd11/mms",
+                      "code" : "RA01"
+                    }
+                  ]
+                }
+              ],
+              "doseNumberPositiveInt" : 1,
+              "seriesDosesPositiveInt" : 2
             }
           ]
         }
