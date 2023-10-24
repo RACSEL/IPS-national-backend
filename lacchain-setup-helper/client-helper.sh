@@ -284,7 +284,7 @@ function actions() {
         echo type "'AX'" to associate a did to an x509 certificate
         echo type "'DX'" to disassociate a did from an x509 certificate
         echo type "'CM'" to create a new chain of trust manager
-        echo type "'GCM'" to get the curent manager
+        echo type "'GCM'" to get the current manager
         echo type "'exit'" to exit the program
         echo
         echo -n "> "
