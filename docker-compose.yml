@@ -194,5 +194,75 @@ services:
       - POSTGRES_PASSWORD=adminips
       - POSTGRES_DB=ips
 
+  ####### LACCHAIN COMPONENT #########
+  lacchain-postgres:
+    image: postgres:15-bullseye
+    ports:
+      - "5440:5432"
+    environment:
+      POSTGRES_PASSWORD: lacchain_postgres_password
+      POSTGRES_DB: lacpass_lacchain_db
+    volumes:
+      - ./lacchain-postgres-data:/var/lib/postgresql/data
+    networks:
+      - lacchain_backend
+  lacchain-redis:
+    image: redis:latest
+    command: redis-server --requirepass lacchain_redis_password
+    ports:
+      - "6390:6379"
+    networks:
+      - lacchain_backend
+  lacpass-lacchain:
+    image: eumb602/lacpass-client:latest
+    environment:
+      ENV: prod
+      DOCS_ENABLED: "true"
+      PORT: 80
+      JWT_SECRET: some-secret-string
+      TYPEORM_TYPE: postgres
+      TYPEORM_HOST: lacchain-postgres
+      TYPEORM_USERNAME: postgres
+      TYPEORM_PASSWORD: lacchain_postgres_password
+      TYPEORM_DATABASE: lacpass_lacchain_db
+      TYPEORM_PORT: 5432
+      TYPEORM_SYNCHRONIZE: "true"
+      TYPEORM_LOGGING: "true"
+      TYPEORM_MIGRATIONS_RUN: "true"
+      REDIS_HOST: lacchain-redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: lacchain_redis_password
+      ACCESS_TOKEN_LIFE: 360000000
+      RATE_LIMIT_WINDOW: 5
+      RATE_LIMIT_MAX_REQUESTS: 100
+      EMAIL_TRANSPORTER: AWS
+      ####### BEGIN OPEN protestnet Configuration #######
+      CHAIN_ID: "0x9e55c"
+      SECURE_RELAY_MESSAGE_DELIVERER_BASE_URL: https://mailbox.openprotest.lacnet.com
+      SECURE_RELAY_MESSAGE_DELIVERER_SEND: /vc
+      SECURE_RELAY_SERVICE_DID: did:lac:openprotest:0xf33bc23691245c2d5de99d7d45e9fdd113495870
+      DID_RESOLVER_URL: "https://resolver.lacchain.net/"
+      NODE_RPC_URL: https://lacpass-openprotest-node.lacchain.net # https://writer-openprotest.lacnet.com
+      NODE_ADDRESS: "0x3a8c3cd49347530d1c946cbad5114418e1546dbc" #"0xad730de8c4bfc3d845f7ce851bcf2ea17c049585"
+      PUBLIC_DIRECTORY_CONTRACT_ADDRESS: "0xbBbfDe862725186E3D5332618a5546e60fcB75e6"
+      CHAIN_OF_TRUST_CONTRACT_ADDRESS: "0xFE7CEF0D8E9A1dab4C4F57154e0191d67D4803AF"
+      PROOF_OF_EXISTENCE_MODE: "ENABLED_NOT_THROWABLE" # options: "STRICT", "DISABLED", by default "ENABLED_NOT_THROWABLE"
+      VERIFICATION_REGISTRY_CONTRACT_ADDRESS: "0x64CaA0fC7E0C1f051078da9525A31D00dB1F50eE"
+      ####### END OPEN protestnet Configuration #######
+    ports:
+      - "3010:80"
+    restart: on-failure
+    container_name: lacpass-lacchain
+    depends_on:
+      - lacchain-postgres
+      - lacchain-redis
+    links:
+      - lacchain-postgres
+      - lacchain-redis
+    networks:
+      - lacchain_backend
+
 networks:
   elastic:
+  lacchain_backend:
+    name: lacchain_backend
