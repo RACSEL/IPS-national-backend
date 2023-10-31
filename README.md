@@ -127,7 +127,7 @@ Optionally, if the IPS has more than one `Immunization` resource, you can pass t
 
 ### LACCHAIN SETUP, ONBOARD HELPER ###
 
-In the folder `lacchain-client-helper` you will find a shell script called `client-helper` which will help you setup the lacpass-lacchain component before using it. You just need to run the script once. To find a fully detailed instructions please check the following documentation:
+In the folder `lacchain-setup-helper` you will find a shell script called `client-helper.sh` which will help you setup the lacpass-lacchain component before using it. You just need to run the script once. To find a fully detailed instructions please check the following documentation:
 
 * [Setup English Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/README.md)
 * [Setup Spanish Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/LEEME.md)
@@ -137,4 +137,4 @@ In the folder `lacchain-client-helper` you will find a shell script called `clie
 Once you have completed the previous section **LACCHAIN SETUP, ONBOARD HELPER** you will be ready to Send Health Certificates to your Patients Wallets; for that please take a look at the following instructions:
 
 * [Send health certificates - English Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/README.md#sending-health-certificates-wrapped-as-verifiable-credentials)
-* [Send health certificates - Spanish Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/LEEME.md#sending-health-certificates-wrapped-as-verifiable-credentials)
+* [Send health certificates - Spanish Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/LEEME.md#enviando-certificados-de-salud-contenidos-en-credenciales-verificables)
