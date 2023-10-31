@@ -8,7 +8,7 @@ The services created by the compose are:
  - Snowstorm (SNOMED CT Terminology server)
  - Snowstorm Browser (Web UI for Snowstorm)
  - LACPass IPS Viewer
- - DDCC Mediator and service
+ - DDCC Mediator IPS and service
  - Bundle signer service
  - IPS Mediator for MHD Transactions
  - IPS to DDCC transformation operation
@@ -34,8 +34,13 @@ If you need to change any of the default value, you can edit `docker-compose.yml
 
 In particular you should change the variable `EXTERNAL_HAPI_FHIR` to the actual public URL to the FHIR server.
 
-You need to provide a private key in the directory `cert-data` in PEM format. See the cert-data README for more information.  
+You need to provide a private key(**DSC01privkey.key**) and cert(**DSCcert.pem**) in the directory `cert-data`. See the cert-data README for more information.  
 
+You also need to add the 3 digit country code(alpha-3-code) in docker-compose.yml in the **ddcc** service, e.g. **ARG** for Argentina
+
+```
+COUNTRY_CODE: 'ARG'
+```
 
 ### Testing
 

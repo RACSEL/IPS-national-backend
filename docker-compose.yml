@@ -149,11 +149,13 @@ services:
 
   ddcc:
     container_name: ddcc-transactions-mediator
-    image: censcl/ops-ddcc-transactions-mediator:latest
+    image: censcl/ops-ddcc-transactions-mediator-lacpass-ips:latest
     environment:
       FHIR_SERVER: 'http://hapi-fhir:8080/fhir/'
       MATCHBOX_SERVER: 'http://resource-generation-service:8080/fhir/'
-      PRIVATE_KEY_FILE: '/app/cert-data/priv.pem'
+      PRIVATE_KEY_FILE: '/app/cert-data/DSC01privkey.key'
+      PUBLIC_KEY_FILE: '/app/cert-data/DSCcert.pem'
+      COUNTRY_CODE: 'XCL'
     volumes:
       - ./cert-data:/app/cert-data
     ports:
