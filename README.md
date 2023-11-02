@@ -8,13 +8,13 @@ The services created by the compose are:
  - Snowstorm (SNOMED CT Terminology server)
  - Snowstorm Browser (Web UI for Snowstorm)
  - LACPass IPS Viewer
- - DDCC Mediator and service
+ - DDCC Mediator IPS and service
  - Bundle signer service
  - IPS Mediator for MHD Transactions
  - IPS to DDCC transformation operation
 
 > **Note**:
-> The services require at least 8GB of ram to run.
+> The services require at least 12GB of ram to run.
 
 ## Requirements
 
@@ -34,8 +34,13 @@ If you need to change any of the default value, you can edit `docker-compose.yml
 
 In particular you should change the variable `EXTERNAL_HAPI_FHIR` to the actual public URL to the FHIR server.
 
-You need to provide a private key in the directory `cert-data` in PEM format. See the cert-data README for more information.  
+You need to provide a private key(**DSC01privkey.key**) and cert(**DSCcert.pem**) in the directory `cert-data`. See the cert-data README for more information.  
 
+You also need to add the 3 digit country code(alpha-3-code) in docker-compose.yml in the **ddcc** service, e.g. **ARG** for Argentina
+
+```
+COUNTRY_CODE: 'ARG'
+```
 
 ### Testing
 
@@ -124,3 +129,17 @@ This transformation retrieves a previously stored IPS and checks whether the `Im
 Optionally, if the IPS has more than one `Immunization` resource, you can pass the query argument `immunizationId` to specify the id of the `Immunization` resource tto transform. For example:
 
     curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$ddcc?immunizationId=6fef12e7-64ad-4792-b2ad-5d6b699588fc'
+
+### LACCHAIN SETUP, ONBOARD HELPER ###
+
+In the folder `lacchain-setup-helper` you will find a shell script called `client-helper.sh` which will help you setup the lacpass-lacchain component before using it. You just need to run the script once. To find a fully detailed instructions please check the following documentation:
+
+* [Setup English Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/README.md)
+* [Setup Spanish Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/LEEME.md)
+
+### LACCHAIN SENDING HEALTH CERTIFICATES TO PATIENT WALLETS ###
+
+Once you have completed the previous section **LACCHAIN SETUP, ONBOARD HELPER** you will be ready to Send Health Certificates to your Patients Wallets; for that please take a look at the following instructions:
+
+* [Send health certificates - English Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/README.md#sending-health-certificates-wrapped-as-verifiable-credentials)
+* [Send health certificates - Spanish Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/LEEME.md#enviando-certificados-de-salud-contenidos-en-credenciales-verificables)
