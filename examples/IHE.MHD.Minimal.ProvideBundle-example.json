@@ -1,0 +1,613 @@
+{
+  "resourceType": "Bundle",
+  "id": "ex-minimalProvideDocumentBundleSimple",
+  "meta": {
+    "profile": [
+      "https://profiles.ihe.net/ITI/MHD/StructureDefinition/IHE.MHD.Minimal.ProvideBundle"
+    ],
+    "security": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+        "code": "HTEST"
+      }
+    ]
+  },
+  "type": "transaction",
+  "timestamp": "2004-10-25T23:50:50-05:00",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:5eac3f2c-504a-47dd-b8b6-94691a0f4dd6",
+      "resource": {
+        "resourceType": "List",
+        "id": "5eac3f2c-504a-47dd-b8b6-94691a0f4dd6",
+        "meta": {
+          "profile": [
+            "https://profiles.ihe.net/ITI/MHD/StructureDefinition/IHE.MHD.Minimal.SubmissionSet"
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST"
+            }
+          ]
+        },
+        "text": {
+          "status": "extensions",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">SubmissionSet with Patient</div>"
+        },
+        "extension": [
+          {
+            "url": "https://profiles.ihe.net/ITI/MHD/StructureDefinition/ihe-sourceId",
+            "valueIdentifier": {
+              "value": "urn:oid:1.2.3.4"
+            }
+          }
+        ],
+        "identifier": [
+          {
+            "use": "usual",
+            "system": "urn:ietf:rfc:3986",
+            "value": "urn:oid:1.2.840.113556.1.8000.2554.58783.21864.3474.19410.44358.58254.41281.46343"
+          }
+        ],
+        "status": "current",
+        "mode": "working",
+        "code": {
+          "coding": [
+            {
+              "system": "https://profiles.ihe.net/ITI/MHD/CodeSystem/MHDlistTypes",
+              "code": "submissionset"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "urn:uuid:d6bf46d8-b0ea-4307-83f8-fcdf36aea951"
+        },
+        "date": "2004-10-25T23:50:50-05:00",
+        "entry": [
+          {
+            "item": {
+              "reference": "urn:uuid:987f3197-b863-4c0d-9a0d-75b0ee08d761"
+            }
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "List"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:987f3197-b863-4c0d-9a0d-75b0ee08d761",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "987f3197-b863-4c0d-9a0d-75b0ee08d761",
+        "meta": {
+          "profile": [
+            "https://profiles.ihe.net/ITI/MHD/StructureDefinition/IHE.MHD.Minimal.DocumentReference"
+          ],
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Generated Narrative: DocumentReference</b><a name=\"987f3197-b863-4c0d-9a0d-75b0ee08d761\"> </a></p><div style=\"display: inline-block; background-color: #d9e0e7; padding: 6px; margin: 4px; border: 1px solid #8da1b4; border-radius: 5px; line-height: 60%\"><p style=\"margin-bottom: 0px\">Resource DocumentReference &quot;987f3197-b863-4c0d-9a0d-75b0ee08d761&quot; </p><p style=\"margin-bottom: 0px\">Profile: <a href=\"StructureDefinition-IHE.MHD.Minimal.DocumentReference.html\">MHD DocumentReference Minimal</a></p><p style=\"margin-bottom: 0px\">Security Labels: <span title=\"{http://terminology.hl7.org/CodeSystem/v3-ActReason http://terminology.hl7.org/CodeSystem/v3-ActReason}\">http://terminology.hl7.org/CodeSystem/v3-ActReason</span></p></div><p><b>masterIdentifier</b>: id: urn:oid:1.2.840.113556.1.8000.2554.53432.348.12973.17740.34205.4355.50220.62012</p><p><b>status</b>: current</p><p><b>subject</b>: <a href=\"#Patient_d6bf46d8-b0ea-4307-83f8-fcdf36aea951\">See above (urn:uuid:d6bf46d8-b0ea-4307-83f8-fcdf36aea951)</a></p><blockquote><p><b>content</b></p><h3>Attachments</h3><table class=\"grid\"><tr><td style=\"display: none\">-</td><td><b>ContentType</b></td><td><b>Url</b></td><td><b>Size</b></td><td><b>Hash</b></td></tr><tr><td style=\"display: none\">*</td><td>text/plain</td><td><code>urn:uuid:5c8ecb2a-8660-4e2c-960e-55998bcfff46</code></td><td>11</td><td>(base64 data - 40 bytes)</td></tr></table><p><b>format</b>: ITI XDS-SD TEXT (Details: http://ihe.net/fhir/ihe.formatcode.fhir/CodeSystem/formatcode code urn:ihe:iti:xds-sd:text:2008 = 'ITI XDS-SD TEXT', stated as 'null')</p></blockquote></div>"
+        },
+        "masterIdentifier": {
+          "system": "urn:ietf:rfc:3986",
+          "value": "urn:oid:1.2.840.113556.1.8000.2554.53432.348.12973.17740.34205.4355.50220.62012"
+        },
+        "status": "current",
+        "subject": {
+          "reference": "urn:uuid:d6bf46d8-b0ea-4307-83f8-fcdf36aea951"
+        },
+        "content": [
+          {
+            "attachment": {
+              "contentType": "text/plain",
+              "url": "urn:uuid:5c8ecb2a-8660-4e2c-960e-55998bcfff46",
+              "size": 11,
+              "hash": "MGE0ZDU1YThkNzc4ZTUwMjJmYWI3MDE5NzdjNWQ4NDBiYmM0ODZkMA=="
+            },
+            "format": {
+              "system": "http://ihe.net/fhir/ihe.formatcode.fhir/CodeSystem/formatcode",
+              "code": "urn:ihe:iti:xds-sd:text:2008"
+            }
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "DocumentReference"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:5c8ecb2a-8660-4e2c-960e-55998bcfff46",
+      "resource": {
+        "resourceType": "Bundle",
+        "id": "5c8ecb2a-8660-4e2c-960e-55998bcfff46",
+        "identifier": {
+          "system": "urn:ietf:rfc:4122",
+          "value": "f50a5146-7d08-4f4d-b7a9-eb8a05d513a0"
+        },
+        "type": "document",
+        "timestamp": "2023-01-15T17:26:43.023+00:00",
+        "entry": [
+          {
+            "fullUrl": "urn:uuid:428e9bed-1f16-4595-91b9-80ae6ac12421",
+            "resource": {
+              "resourceType": "Composition",
+              "status": "final",
+              "type": {
+                "coding": [
+                  {
+                    "system": "http://loinc.org",
+                    "code": "60591-5",
+                    "display": "Patient Summary Document"
+                  }
+                ]
+              },
+              "subject": {
+                "reference": "Patient/d6bf46d8-b0ea-4307-83f8-fcdf36aea951"
+              },
+              "date": "2023-01-15T17:26:43+00:00",
+              "author": [
+                {
+                  "reference": "Organization/44e83c58-b43f-4ac1-8472-3b42d334fe8f"
+                }
+              ],
+              "title": "Patient Summary as of 01/15/2023",
+              "confidentiality": "N",
+              "custodian": {
+                "reference": "Organization/44e83c58-b43f-4ac1-8472-3b42d334fe8f"
+              },
+              "section": [
+                {
+                  "title": "Active Problems",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://loinc.org",
+                        "code": "11450-4",
+                        "display": "Problem list Reported"
+                      }
+                    ]
+                  },
+                  "entry": [
+                    {
+                      "reference": "Condition/03368859-2b77-44fa-b1b1-9e303e408cc3"
+                    }
+                  ]
+                },
+                {
+                  "title": "Medication",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://loinc.org",
+                        "code": "10160-0",
+                        "display": "History of Medication use Narrative"
+                      }
+                    ]
+                  },
+                  "entry": [
+                    {
+                      "reference": "MedicationStatement/30375d1f-ee56-4303-bbe0-097cfa5f2f78"
+                    }
+                  ]
+                },
+                {
+                  "title": "Allergies and Intolerances",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://loinc.org",
+                        "code": "48765-2",
+                        "display": "Allergies and adverse reactions Document"
+                      }
+                    ]
+                  },
+                  "entry": [
+                    {
+                      "reference": "AllergyIntolerance/520fcaa1-1234-40c8-b03f-58ef77c40b13"
+                    }
+                  ]
+                },
+                {
+                  "title": "History of Immunizations",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://loinc.org",
+                        "code": "11369-6",
+                        "display": "History of Immunization Narrative"
+                      }
+                    ]
+                  },
+                  "text": {
+                    "status": "generated",
+                    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\">To be populated at future time</div>"
+                  },
+                  "entry": [
+                    {
+                      "reference": "Immunization/7dcfa260-f92e-4aaa-9cac-a2b9cf8a97b9"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:d6bf46d8-b0ea-4307-83f8-fcdf36aea951",
+            "resource": {
+              "resourceType": "Patient",
+              "id": "d6bf46d8-b0ea-4307-83f8-fcdf36aea951",
+              "identifier": [
+                {
+                  "system": "urn:oid:2.16.840.1.113883.3.9143.2.1.5",
+                  "type": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                        "code": "TAX"
+                      }
+                    ]
+                  },
+                  "value": "CL/18922652-7"
+                },
+                {
+                  "use": "official",
+                  "type": {
+                    "coding": [
+                      {
+                        "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                        "code": "PPN"
+                      }
+                    ]
+                  },
+                  "system": "urn:oid:2.16.840.1.113883.3.9143.2.1.1",
+                  "value": "CL/F12-1234123-2"
+                }
+              ],
+              "active": true,
+              "name": [
+                {
+                  "use": "official",
+                  "text": "Sergio Penafiel",
+                  "family": "Penafiel",
+                  "given": [
+                    "Sergio"
+                  ]
+                }
+              ],
+              "gender": "male",
+              "birthDate": "1994-10-13"
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:7dcfa260-f92e-4aaa-9cac-a2b9cf8a97b9",
+            "resource": {
+              "resourceType": "Immunization",
+              "id": "7dcfa260-f92e-4aaa-9cac-a2b9cf8a97b9",
+              "meta": {
+                "profile": [
+                  "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCImmunization"
+                ]
+              },
+              "extension": [
+                {
+                  "url": "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCEventBrand",
+                  "valueCoding": {
+                    "system": "http://worldhealthorganization.github.io/ddcc/CodeSystem/DDCC-Example-Test-CodeSystem",
+                    "code": "XM4YL8"
+                  }
+                },
+                {
+                  "url": "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCVaccineMarketAuthorization",
+                  "valueCoding": {
+                    "system": "http://worldhealthorganization.github.io/ddcc/CodeSystem/DDCC-Example-Test-CodeSystem",
+                    "code": "TEST"
+                  }
+                },
+                {
+                  "url": "http://worldhealthorganization.github.io/ddcc/StructureDefinition/DDCCCountryOfEvent",
+                  "valueCode": "CL"
+                }
+              ],
+              "status": "completed",
+              "vaccineCode": {
+                "coding": [
+                  {
+                    "system": "http://id.who.int/icd11/mms",
+                    "code": "XM9QW8",
+                    "display": "COVID-19 vaccine, non-replicating viral vector"
+                  }
+                ]
+              },
+              "lotNumber": "A1234",
+              "patient": {
+                "reference": "Patient/d6bf46d8-b0ea-4307-83f8-fcdf36aea951"
+              },
+              "occurrenceDateTime": "2020-11-15",
+              "protocolApplied": [
+                {
+                  "doseNumberPositiveInt": 1
+                }
+              ]
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:03368859-2b77-44fa-b1b1-9e303e408cc3",
+            "resource": {
+              "resourceType": "Condition",
+              "id": "03368859-2b77-44fa-b1b1-9e303e408cc3",
+              "clinicalStatus": {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                    "code": "active"
+                  }
+                ]
+              },
+              "verificationStatus": {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+                    "code": "confirmed"
+                  }
+                ]
+              },
+              "category": [
+                {
+                  "coding": [
+                    {
+                      "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                      "code": "problem-list-item",
+                      "display": "Problem List Item"
+                    },
+                    {
+                      "system": "http://loinc.org",
+                      "code": "75326-9",
+                      "display": "Problem"
+                    }
+                  ]
+                }
+              ],
+              "severity": {
+                "coding": [
+                  {
+                    "system": "http://loinc.org",
+                    "code": "LA6751-7",
+                    "display": "Moderate"
+                  }
+                ]
+              },
+              "code": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/sid/icd-10",
+                    "code": "A00-A09",
+                    "display": "Intestinal infectious diseases"
+                  }
+                ]
+              },
+              "subject": {
+                "reference": "Patient/d6bf46d8-b0ea-4307-83f8-fcdf36aea951"
+              },
+              "onsetDateTime": "2015",
+              "recordedDate": "2016-10"
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:d5b10a87-63b9-4701-b8c6-11942ccf2d7f",
+            "resource": {
+              "resourceType": "Medication",
+              "id": "d5b10a87-63b9-4701-b8c6-11942ccf2d7f",
+              "code": {
+                "coding": [
+                  {
+                    "system": "http://snomed.info/sct",
+                    "code": "108774000",
+                    "display": "Product containing anastrozole (medicinal product)"
+                  },
+                  {
+                    "system": "urn:oid:2.16.840.1.113883.2.4.4.1",
+                    "code": "99872",
+                    "display": "ANASTROZOL 1MG TABLET"
+                  },
+                  {
+                    "system": "urn:oid:2.16.840.1.113883.2.4.4.7",
+                    "code": "2076667",
+                    "display": "ANASTROZOL CF TABLET FILMOMHULD 1MG"
+                  },
+                  {
+                    "system": "http://www.whocc.no/atc",
+                    "code": "L02BG03",
+                    "display": "anastrozole"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:30375d1f-ee56-4303-bbe0-097cfa5f2f78",
+            "resource": {
+              "resourceType": "MedicationStatement",
+              "id": "30375d1f-ee56-4303-bbe0-097cfa5f2f78",
+              "status": "active",
+              "medicationReference": {
+                "reference": "Medication/d5b10a87-63b9-4701-b8c6-11942ccf2d7f"
+              },
+              "subject": {
+                "reference": "Patient/d6bf46d8-b0ea-4307-83f8-fcdf36aea951"
+              },
+              "effectivePeriod": {
+                "start": "2015-03"
+              },
+              "dosage": [
+                {
+                  "timing": {
+                    "repeat": {
+                      "count": 1,
+                      "periodUnit": "d"
+                    }
+                  },
+                  "route": {
+                    "coding": [
+                      {
+                        "system": "http://standardterms.edqm.eu",
+                        "code": "20053000",
+                        "display": "Oral use"
+                      }
+                    ]
+                  },
+                  "doseAndRate": [
+                    {
+                      "type": {
+                        "coding": [
+                          {
+                            "system": "http://terminology.hl7.org/CodeSystem/dose-rate-type",
+                            "code": "ordered",
+                            "display": "Ordered"
+                          }
+                        ]
+                      },
+                      "doseQuantity": {
+                        "value": 1,
+                        "unit": "tablet",
+                        "system": "http://unitsofmeasure.org",
+                        "code": "1"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:520fcaa1-1234-40c8-b03f-58ef77c40b13",
+            "resource": {
+              "resourceType": "AllergyIntolerance",
+              "id": "520fcaa1-1234-40c8-b03f-58ef77c40b13",
+              "clinicalStatus": {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
+                    "code": "active"
+                  }
+                ]
+              },
+              "verificationStatus": {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
+                    "code": "confirmed"
+                  }
+                ]
+              },
+              "type": "allergy",
+              "category": [
+                "medication"
+              ],
+              "criticality": "high",
+              "code": {
+                "coding": [
+                  {
+                    "system": "http://snomed.info/sct",
+                    "code": "373270004",
+                    "display": "Substance with penicillin structure and antibacterial mechanism of action (substance)"
+                  }
+                ]
+              },
+              "patient": {
+                "reference": "Patient/d6bf46d8-b0ea-4307-83f8-fcdf36aea951"
+              },
+              "onsetDateTime": "2010"
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:44e83c58-b43f-4ac1-8472-3b42d334fe8f",
+            "resource": {
+              "resourceType": "Organization",
+              "id": "44e83c58-b43f-4ac1-8472-3b42d334fe8f",
+              "name": "Ministerio de Salud",
+              "address": [
+                {
+                  "text": "Enrique Mac Iver 541, Santiago, Región Metropolitana",
+                  "country": "CL"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Bundle"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:d6bf46d8-b0ea-4307-83f8-fcdf36aea951",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "d6bf46d8-b0ea-4307-83f8-fcdf36aea951",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST"
+            }
+          ]
+        },
+        "identifier": [
+          {
+            "system": "urn:oid:2.16.840.1.113883.3.9143.2.1.5",
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "TAX"
+                }
+              ]
+            },
+            "value": "CL/18922652-7"
+          },
+          {
+            "use": "official",
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "PPN"
+                }
+              ]
+            },
+            "system": "urn:oid:2.16.840.1.113883.3.9143.2.1.1",
+            "value": "CL/F12-1234123-2"
+          }
+        ],
+        "active": true,
+        "name": [
+          {
+            "use": "official",
+            "text": "Sergio Penafiel",
+            "family": "Penafiel",
+            "given": [
+              "Sergio"
+            ]
+          }
+        ],
+        "gender": "male",
+        "birthDate": "1994-10-13"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient/d6bf46d8-b0ea-4307-83f8-fcdf36aea951"
+      }
+    }
+  ]
+}
