@@ -279,10 +279,7 @@ function actions() {
         sleep 0.5
         echo
         echo "************* CLI MAIN MENU *************"
-        echo type "'SSC'" to create a 'Self Signed Certificate'
         echo type "'CD'" to create a new did
-        echo type "'AX'" to associate a did to an x509 certificate
-        echo type "'DX'" to disassociate a did from an x509 certificate
         echo type "'CM'" to create a new chain of trust manager
         echo type "'GCM'" to get the current manager
         echo type "'exit'" to exit the program
