@@ -20,6 +20,7 @@ The services created by the compose are:
 
 - Docker version >20.10.8 
 - Docker compose version >1.29.2
+- HAPI FHIR 6.0.1+
 
 
 To run the services use: 
