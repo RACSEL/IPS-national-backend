@@ -49,45 +49,47 @@ services:
 
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
     container_name: elasticsearch
     environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
       - node.name=snowstorm
       - cluster.name=snowstorm-cluster
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
-      - discovery.type=single-node
+      - repositories.url.allowed_urls=["https://storage.googleapis.com/snowstorm-preload/"]
+      - action.destructive_requires_name=false
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
     volumes:
-      - ./elastic:/var/lib/elasticsearch/data
+      - snowstorm_preload:/usr/share/elasticsearch/data
     networks:
       elastic:
         aliases:
-          - es
+         - es
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://es:9200" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      test: ["CMD", "curl", "-f", "http://es:9200"]
+      interval: 1s
+      timeout: 1s
+      retries: 60
     ports:
       - 127.0.0.1:9200:9200
-    mem_reservation: 2g
+    mem_reservation: 4g
 
 
   snowstorm:
-    image: snomedinternational/snowstorm:latest
+    image: snomedinternational/snowstorm:10.3.1
     container_name: snowstorm
     restart: always
     depends_on:
       elasticsearch:
         condition: service_healthy
-    entrypoint: java -Xms2g -Xmx4g -jar snowstorm.jar --elasticsearch.urls=http://es:9200 --delete-indices --import=/snomed/SnomedCT_IPSTerminologyRelease.zip
+    entrypoint: java -Xms2g -Xmx4g --add-opens java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED -cp @/app/jib-classpath-file org.snomed.snowstorm.SnowstormApplication --elasticsearch.urls=http://es:9200
     networks:
       elastic:
         aliases:
-          - snowstorm
-    volumes:
-      - ./snomed:/snomed
+         - snowstorm
     ports:
-      - 8000:8080
+      - 8180:8080
+
 
   snowstorm-browser:
     image: snomedinternational/snomedct-browser:latest
@@ -104,48 +106,18 @@ services:
       - 8082:80
     restart: always
 
-  # openhim-mongo-db:
-  #   container_name: openhim-mongo-db
-  #   image: mongo:4.0
-  #   networks:
-  #     - openhim
-  #   volumes:
-  #     - "./mongo-data:/data/db"
-  #   restart: unless-stopped
+  init-script-snowstorm:
+    image: appropriate/curl
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - .snowstorm-init-status:/status
+      - ./init_snowstorm.sh:/usr/local/bin/init_snowstorm.sh
+    entrypoint: /bin/sh -c 'sh /usr/local/bin/init_snowstorm.sh'
+    networks:
+      - elastic
 
-  # openhim-core:
-  #   container_name: openhim-core
-  #   image: jembi/openhim-core:v7.1.0
-  #   restart: unless-stopped
-  #   environment:
-  #     mongo_url: "mongodb://openhim-mongo-db/openhim-development"
-  #     mongo_atnaUrl: "mongodb://openhim-mongo-db/openhim-development"
-  #     NODE_ENV: "development"
-  #   ports:
-  #     - "8083:8080"
-  #     - "8084:5000"
-  #     - "8085:5001"
-  #   networks:
-  #     - openhim
-  #   healthcheck:
-  #     test: "curl -sSk https://openhim-core:8083/heartbeat || exit 1"
-  #     interval: 30s
-  #     timeout: 30s
-  #     retries: 3
-
-  # openhim-console:
-  #   container_name: openhim-console
-  #   image: jembi/openhim-console:v1.15.0
-  #   restart: unless-stopped
-  #   networks:
-  #     - openhim
-  #   ports:
-  #     - "8086:80"
-  #   healthcheck:
-  #     test: "curl -sS http://openhim-console || exit 1"
-  #     interval: 30s
-  #     timeout: 30s
-  #     retries: 3
 
   ddcc:
     container_name: ddcc-transactions-mediator
@@ -196,75 +168,8 @@ services:
       - POSTGRES_PASSWORD=adminips
       - POSTGRES_DB=ips
 
-  ####### LACCHAIN COMPONENT #########
-  lacchain-postgres:
-    image: postgres:15-bullseye
-    ports:
-      - "5440:5432"
-    environment:
-      POSTGRES_PASSWORD: lacchain_postgres_password
-      POSTGRES_DB: lacpass_lacchain_db
-    volumes:
-      - ./lacchain-postgres-data:/var/lib/postgresql/data
-    networks:
-      - lacchain_backend
-  lacchain-redis:
-    image: redis:latest
-    command: redis-server --requirepass lacchain_redis_password
-    ports:
-      - "6390:6379"
-    networks:
-      - lacchain_backend
-  lacpass-lacchain:
-    image: eumb602/lacpass-client:latest
-    environment:
-      ENV: prod
-      DOCS_ENABLED: "true"
-      PORT: 80
-      JWT_SECRET: some-secret-string
-      TYPEORM_TYPE: postgres
-      TYPEORM_HOST: lacchain-postgres
-      TYPEORM_USERNAME: postgres
-      TYPEORM_PASSWORD: lacchain_postgres_password
-      TYPEORM_DATABASE: lacpass_lacchain_db
-      TYPEORM_PORT: 5432
-      TYPEORM_SYNCHRONIZE: "true"
-      TYPEORM_LOGGING: "true"
-      TYPEORM_MIGRATIONS_RUN: "true"
-      REDIS_HOST: lacchain-redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: lacchain_redis_password
-      ACCESS_TOKEN_LIFE: 360000000
-      RATE_LIMIT_WINDOW: 5
-      RATE_LIMIT_MAX_REQUESTS: 100
-      EMAIL_TRANSPORTER: AWS
-      ####### BEGIN OPEN protestnet Configuration #######
-      CHAIN_ID: "0x9e55c"
-      SECURE_RELAY_MESSAGE_DELIVERER_BASE_URL: https://mailbox.openprotest.lacnet.com
-      SECURE_RELAY_MESSAGE_DELIVERER_SEND: /vc
-      SECURE_RELAY_SERVICE_DID: did:lac:openprotest:0xf33bc23691245c2d5de99d7d45e9fdd113495870
-      DID_RESOLVER_URL: "https://resolver.lacchain.net/"
-      NODE_RPC_URL: https://lacpass-openprotest-node.lacchain.net # https://writer-openprotest.lacnet.com
-      NODE_ADDRESS: "0x3a8c3cd49347530d1c946cbad5114418e1546dbc" #"0xad730de8c4bfc3d845f7ce851bcf2ea17c049585"
-      PUBLIC_DIRECTORY_CONTRACT_ADDRESS: "0xbBbfDe862725186E3D5332618a5546e60fcB75e6"
-      CHAIN_OF_TRUST_CONTRACT_ADDRESS: "0xFE7CEF0D8E9A1dab4C4F57154e0191d67D4803AF"
-      PROOF_OF_EXISTENCE_MODE: "ENABLED_NOT_THROWABLE" # options: "STRICT", "DISABLED", by default "ENABLED_NOT_THROWABLE"
-      VERIFICATION_REGISTRY_CONTRACT_ADDRESS: "0x64CaA0fC7E0C1f051078da9525A31D00dB1F50eE"
-      ####### END OPEN protestnet Configuration #######
-    ports:
-      - "3010:80"
-    restart: on-failure
-    container_name: lacpass-lacchain
-    depends_on:
-      - lacchain-postgres
-      - lacchain-redis
-    links:
-      - lacchain-postgres
-      - lacchain-redis
-    networks:
-      - lacchain_backend
-
 networks:
   elastic:
-  lacchain_backend:
-    name: lacchain_backend
+
+volumes:
+  snowstorm_preload:
