@@ -11,8 +11,10 @@ if [ ! -f /status/script_executed ]; then
   }
 }
 ' 
+  sleep 15
   echo "2. Delete existing data"
   curl -X DELETE elasticsearch:9200/_all
+  sleep 30
   echo "3. Download and restore data"
   curl -X POST "elasticsearch:9200/_snapshot/snowstorm_preload_server/snowstorm_10.3.1_spain_20240331/_restore?wait_for_completion=true" -H 'Content-Type: application/json' -d'
 {
