@@ -47,7 +47,7 @@ COUNTRY_CODE: 'ARG'
 
 * Check whether the HAPI FHIR server is running in `http://localhost:8080` 
 
-* Check whether the Snowstorm and Snowstorm browser server is running in `http://localhost:8082` Also check if the IPS terms were correctly uploaded.
+* Check whether the Snowstorm and Snowstorm browser server is running in `http://localhost:8082` Also check if the terms were correctly uploaded.
 
 * Test creating an IPS resource directly using the bundle endpoint. For example use this command
 
@@ -131,16 +131,8 @@ Optionally, if the IPS has more than one `Immunization` resource, you can pass t
 
     curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$ddcc?immunizationId=6fef12e7-64ad-4792-b2ad-5d6b699588fc'
 
-### LACCHAIN SETUP, ONBOARD HELPER ###
+### Terminology Server
 
-In the folder `lacchain-setup-helper` you will find a shell script called `client-helper.sh` which will help you setup the lacpass-lacchain component before using it. You just need to run the script once. To find a fully detailed instructions please check the following documentation:
+An instance of `elasticsearch`, `snowstorm` and `snowstorm-browser` are provided within the docker compose services. Also an initialization script `init_snowstorm.sh` is executed the first time those services are deployed. By default this scripts loads the terms for spanish corpus into the server.
 
-* [Setup English Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/README.md)
-* [Setup Spanish Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/LEEME.md)
-
-### LACCHAIN SENDING HEALTH CERTIFICATES TO PATIENT WALLETS ###
-
-Once you have completed the previous section **LACCHAIN SETUP, ONBOARD HELPER** you will be ready to Send Health Certificates to your Patients Wallets; for that please take a look at the following instructions:
-
-* [Send health certificates - English Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/README.md#sending-health-certificates-wrapped-as-verifiable-credentials)
-* [Send health certificates - Spanish Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/LEEME.md#enviando-certificados-de-salud-contenidos-en-credenciales-verificables)
+Check access to the browser by navigating to `http://localhost:8082`
