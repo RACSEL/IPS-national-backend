@@ -135,4 +135,35 @@ Optionally, if the IPS has more than one `Immunization` resource, you can pass t
 
 An instance of `elasticsearch`, `snowstorm` and `snowstorm-browser` are provided within the docker compose services. Also an initialization script `init_snowstorm.sh` is executed the first time those services are deployed. By default this scripts loads the terms for spanish corpus into the server.
 
+The Snowstorm instance is pre-loaded with the latest version of the Latin-America Spanish Edition.
+
 Check access to the browser by navigating to `http://localhost:8082`
+
+#### Converting local terminologies to FHIR (Connectathon 2024)
+
+An XLSX template was designed to facilitate the creation of the necessary terminology artifacts. The XLS template provides a mechanism to load local terminologies and map to SNOMED CT, ICD-10 or ICD-11, as required.
+
+Run transformation script:
+
+    python3 racsel-convert-xlsx-to-fhir.py Subsets_Conectathon_Test_Data.xlsx
+
+Users should complete all the necessary fields in the template, and then run the Python script. The result of the script run will be a FHIR Package that incldes all necessary resources:
+- CodeSystems
+    - RACSEL: a code system with all codes in RACSEL common terms
+    - ICD-10 fragment: only the codes used in the connectathon
+    - ICD-11 fragment: only the codes used in the connectathon
+    - Local Code System: the local codes provided by the user
+- ValueSet
+    - SNOMED Value Sets: one per section plus a general value set
+    - ICD-10: all codes
+    - ICD-11: all codes
+    - RACSEL: one per section plus a general value set
+    - Local Codes: one per section plus a general value set
+
+#### Loading FHIR Resources in the terminology server
+
+The previous step generates a FHIR package, the current version of Snowstorm supports loading FHIR resources in the FHIR Package using the "load-package" endpoint.
+
+Example of uploading the package from the command line:
+
+    curl --form file=@racsel_fhir_package.tgz --form resourceUrls="*" http://localhost:8080/fhir-admin/load-package
