@@ -77,11 +77,14 @@ def create_concept_map(map_values, sourceUri, targetUri, name):
         "group": []
     }
     
-    conceptMap["group"].append({
-        "source": sourceUri,
-        "target": targetUri,
-        "element": [{"code": sourceCode, "display": sourceDisplay, "target": [{"code": targetCode, "display": targetDisplay, "equivalence": "equivalent"}]} for sourceCode, sourceDisplay, targetCode, targetDisplay in map_values]
-    })
+    # Add group if there map values
+    if len(map_values) > 0:
+        conceptMap["group"].append({
+            "source": sourceUri,
+            "target": targetUri,
+            "element": [{"code": sourceCode, "display": sourceDisplay, "target": [{"code": targetCode, "display": targetDisplay, "equivalence": "equivalent"}]} for sourceCode, sourceDisplay, targetCode, targetDisplay in map_values]
+        })
+
 
     return conceptMap
 
