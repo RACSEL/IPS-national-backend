@@ -124,6 +124,7 @@ def convert_to_fhir(file_path):
     procedimientos_racsel = extract_codes(procedimientos_df, 1, 2)
     procedimientos_local = extract_codes(procedimientos_df, 3, 4)
 
+    # Forward maps
     antecedentes_local_to_racsel = extract_maps(antecedentes_df, 3, 4, 1, 2)
     antecedentes_local_to_cie10 = extract_maps(antecedentes_df, 3, 4, 5, 6)
     antecedentes_local_to_snomed = extract_maps(antecedentes_df, 3, 4, 7, 8)
@@ -139,11 +140,43 @@ def convert_to_fhir(file_path):
     medicacion_local_to_snomed = extract_maps(medicacion_df, 3, 4, 7, 8)
     procedimientos_local_to_racsel = extract_maps(procedimientos_df, 3, 4, 1, 2)
     procedimientos_local_to_snomed = extract_maps(procedimientos_df, 3, 4, 7, 8)
+    antecedentes_cie10_to_snomed = extract_maps(antecedentes_df, 5, 6, 7, 8)
+    diagnosticos_cie10_to_snomed = extract_maps(diagnosticos_df, 5, 6, 7, 8)
+    vacunas_cie11_to_snomed = extract_maps(vacunas_df, 5, 6, 7, 8)
+
+    # Reverse maps
+    antecedentes_racsel_to_local = extract_maps(antecedentes_df, 1, 2, 3, 4)
+    antecedentes_cie10_to_local = extract_maps(antecedentes_df, 5, 6, 3, 4)
+    antecedentes_snomed_to_local = extract_maps(antecedentes_df, 7, 8, 3, 4)
+    diagnosticos_racsel_to_local = extract_maps(diagnosticos_df, 1, 2, 3, 4)
+    diagnosticos_cie10_to_local = extract_maps(diagnosticos_df, 5, 6, 3, 4)
+    diagnosticos_snomed_to_local = extract_maps(diagnosticos_df, 7, 8, 3, 4)
+    vacunas_racsel_to_local = extract_maps(vacunas_df, 1, 2, 3, 4)
+    vacunas_cie11_to_local = extract_maps(vacunas_df, 5, 6, 3, 4)
+    vacunas_snomed_to_local = extract_maps(vacunas_df, 7, 8, 3, 4)
+    alergias_racsel_to_local = extract_maps(alergias_df, 1, 2, 3, 4)
+    alergias_snomed_to_local = extract_maps(alergias_df, 7, 8, 3, 4)
+    medicacion_racsel_to_local = extract_maps(medicacion_df, 1, 2, 3, 4)
+    medicacion_snomed_to_local = extract_maps(medicacion_df, 7, 8, 3, 4)
+    procedimientos_racsel_to_local = extract_maps(procedimientos_df, 1, 2, 3, 4)
+    procedimientos_snomed_to_local = extract_maps(procedimientos_df, 7, 8, 3, 4)
+    antecedentes_snomed_to_cie10 = extract_maps(antecedentes_df, 7, 8, 5, 6)
+    diagnosticos_snomed_to_cie10 = extract_maps(diagnosticos_df, 7, 8, 5, 6)
+    vacunas_snomed_to_cie11 = extract_maps(vacunas_df, 7, 8, 5, 6)
 
     local_to_racsel = antecedentes_local_to_racsel + diagnosticos_local_to_racsel + vacunas_local_to_racsel + alergias_local_to_racsel + medicacion_local_to_racsel + procedimientos_local_to_racsel
     local_to_snomed = antecedentes_local_to_snomed + diagnosticos_local_to_snomed + vacunas_local_to_snomed + alergias_local_to_snomed + medicacion_local_to_snomed + procedimientos_local_to_snomed
     local_to_cie10 = antecedentes_local_to_cie10 + diagnosticos_local_to_cie10
     local_to_cie11 = vacunas_local_to_cie11
+    cie10_to_snomed = antecedentes_cie10_to_snomed + diagnosticos_cie10_to_snomed
+    cie11_to_snomed = vacunas_cie11_to_snomed
+    cie11_to_local = vacunas_cie11_to_local
+    racsel_to_local = antecedentes_racsel_to_local + diagnosticos_racsel_to_local + vacunas_racsel_to_local + alergias_racsel_to_local + medicacion_racsel_to_local + procedimientos_racsel_to_local
+    cie10_to_local = antecedentes_cie10_to_local + diagnosticos_cie10_to_local
+    snomed_to_local = antecedentes_snomed_to_local + diagnosticos_snomed_to_local + vacunas_snomed_to_local + alergias_snomed_to_local + medicacion_snomed_to_local + procedimientos_snomed_to_local
+    snomed_to_cie10 = antecedentes_snomed_to_cie10 + diagnosticos_snomed_to_cie10
+    snomed_to_cie11 = vacunas_snomed_to_cie11
+    
 
     racselConnectathonUri = "http://racsel.org/connectathon"
 
@@ -187,6 +220,15 @@ def convert_to_fhir(file_path):
     local_to_snomed_map_json = create_concept_map(local_to_snomed, local_uri, snomed_uri, "Local to SNOMED")
     local_to_cie10_map_json = create_concept_map(local_to_cie10, local_uri, cie10_uri, "Local to CIE10")
     local_to_cie11_map_json = create_concept_map(local_to_cie11, local_uri, cie11_uri, "Local to CIE11")
+    cie10_to_snomed_map_json = create_concept_map(cie10_to_snomed, cie10_uri, snomed_uri, "CIE10 to SNOMED")
+    cie11_to_snomed_map_json = create_concept_map(cie11_to_snomed, cie11_uri, snomed_uri, "CIE11 to SNOMED")
+    racsel_to_local_map_json = create_concept_map(racsel_to_local, racselConnectathonUri, local_uri, "RACSEL to Local")
+    cie10_to_local_map_json = create_concept_map(cie10_to_local, cie10_uri, local_uri, "CIE10 to Local")
+    cie11_to_local_map_json = create_concept_map(cie11_to_local, cie11_uri, local_uri, "CIE11 to Local")
+    snomed_to_local_map_json = create_concept_map(snomed_to_local, snomed_uri, local_uri, "SNOMED to Local")
+    snomed_to_cie10_map_json = create_concept_map(snomed_to_cie10, snomed_uri, cie10_uri, "SNOMED to CIE10")
+    snomed_to_cie11_map_json = create_concept_map(snomed_to_cie11, snomed_uri, cie11_uri, "SNOMED to CIE11")
+
 
     # prepare FHIR package
 
@@ -240,7 +282,15 @@ def convert_to_fhir(file_path):
         (local_to_racsel_map_json, "package/ConceptMap/Local-to-RACSEL.json"),
         (local_to_snomed_map_json, "package/ConceptMap/Local-to-SNOMED.json"),
         (local_to_cie10_map_json, "package/ConceptMap/Local-to-CIE10.json"),
-        (local_to_cie11_map_json, "package/ConceptMap/Local-to-CIE11.json")
+        (local_to_cie11_map_json, "package/ConceptMap/Local-to-CIE11.json"),
+        (cie10_to_snomed_map_json, "package/ConceptMap/CIE10-to-SNOMED.json"),
+        (cie11_to_snomed_map_json, "package/ConceptMap/CIE11-to-SNOMED.json"),
+        (racsel_to_local_map_json, "package/ConceptMap/RACSEL-to-Local.json"),
+        (cie10_to_local_map_json, "package/ConceptMap/CIE10-to-Local.json"),
+        (cie11_to_local_map_json, "package/ConceptMap/CIE11-to-Local.json"),
+        (snomed_to_local_map_json, "package/ConceptMap/SNOMED-to-Local.json"),
+        (snomed_to_cie10_map_json, "package/ConceptMap/SNOMED-to-CIE10.json"),
+        (snomed_to_cie11_map_json, "package/ConceptMap/SNOMED-to-CIE11.json")
     ]
 
     # Add resources to manifests
