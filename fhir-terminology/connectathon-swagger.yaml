@@ -5,7 +5,7 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:8080/fhir
+  - url: http://localhost/fhir
 
 paths:
   /CodeSystem:
@@ -162,16 +162,16 @@ paths:
                 value: "http://snomed.info/sct"
                 summary: "SNOMED CodeSystem"
             racsel:
-              value: "http://racsel.org/fhir/CodeSystem/RACSELCodeSystem"
+              value: "http://racsel.org/connectathon"
               summary: "RACSEL CodeSystem"
             icd_10:
-              value: "http://racsel.org/fhir/CodeSystem/icd-10"
+              value: "http://hl7.org/fhir/sid/icd-10"
               summary: "ICD-10 CodeSystem"
             icd_11:
-              value: "http://racsel.org/fhir/CodeSystem/icd-11"
+              value: "http://id.who.int/icd/release/11/mms"
               summary: "ICD-11 CodeSystem"
             local:
-              value: "http://racsel.org/fhir/CodeSystem/LocalCodeSystem"
+              value: "http://node-x.org/terminology"
               summary: "Local CodeSystem"
         - name: target
           in: query
@@ -184,16 +184,16 @@ paths:
                 value: "http://snomed.info/sct"
                 summary: "SNOMED CodeSystem"
             racsel:
-              value: "http://racsel.org/fhir/CodeSystem/RACSELCodeSystem"
+              value: "http://racsel.org/connectathon"
               summary: "RACSEL CodeSystem"
             icd_10:
-              value: "http://racsel.org/fhir/CodeSystem/icd-10"
+              value: "http://hl7.org/fhir/sid/icd-10"
               summary: "ICD-10 CodeSystem"
             icd_11:
-              value: "http://racsel.org/fhir/CodeSystem/icd-11"
+              value: "http://id.who.int/icd/release/11/mms"
               summary: "ICD-11 CodeSystem"
             local:
-              value: "http://racsel.org/fhir/CodeSystem/LocalCodeSystem"
+              value: "http://node-x.org/terminology"
               summary: "Local CodeSystem"
       responses:
         '200':
@@ -234,10 +234,10 @@ paths:
               value: "http://racsel.org/fhir/CodeSystem/racsel-cs"
               summary: "RACSEL CodeSystem"
             icd_10:
-              value: "http://racsel.org/fhir/CodeSystem/icd-10-cs"
+              value: "http://hl7.org/fhir/sid/icd-10-cs"
               summary: "ICD-10 CodeSystem"
             icd_11:
-              value: "http://racsel.org/fhir/CodeSystem/icd-11-cs"
+              value: "http://id.who.int/icd/release/11/mms-cs"
               summary: "ICD-11 CodeSystem"
             local:
               value: "http://racsel.org/fhir/CodeSystem/local-cs"
@@ -373,16 +373,16 @@ paths:
                 value: "http://snomed.info/sct"
                 summary: "SNOMED CodeSystem"
             racsel:
-              value: "http://racsel.org/fhir/CodeSystem/RACSELCodeSystem"
+              value: "http://racsel.org/connectathon"
               summary: "RACSEL CodeSystem"
             icd_10:
-              value: "http://racsel.org/fhir/CodeSystem/icd-10"
+              value: "http://hl7.org/fhir/sid/icd-10"
               summary: "ICD-10 CodeSystem"
             icd_11:
-              value: "http://racsel.org/fhir/CodeSystem/icd-11"
+              value: "http://id.who.int/icd/release/11/mms"
               summary: "ICD-11 CodeSystem"
             local:
-              value: "http://racsel.org/fhir/CodeSystem/LocalCodeSystem"
+              value: "http://node-x.org/terminology"
               summary: "Local CodeSystem"
       responses:
         '200':
