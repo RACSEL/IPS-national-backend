@@ -10,11 +10,34 @@ servers:
 paths:
   /CodeSystem:
     get:
-      summary: Get a list of CodeSystems
+      summary: Get a list of CodeSystems or search CodeSystems by parameters
       operationId: getCodeSystems
+      parameters:
+        - name: url
+          in: query
+          description: The URL of the CodeSystem to retrieve
+          required: false
+          schema:
+            type: string
+          examples:
+            snomed:
+                value: "http://snomed.info/sct"
+                summary: "SNOMED CodeSystem"
+            racsel:
+              value: "http://racsel.org/connectathon"
+              summary: "RACSEL CodeSystem"
+            icd_10:
+              value: "http://hl7.org/fhir/sid/icd-10"
+              summary: "ICD-10 CodeSystem"
+            icd_11:
+              value: "http://id.who.int/icd/release/11/mms"
+              summary: "ICD-11 CodeSystem"
+            local:
+              value: "http://node-x.org/terminology"
+              summary: "Local CodeSystem"
       responses:
         '200':
-          description: A list of CodeSystems
+          description: A list of CodeSystems or a specific CodeSystem
           content:
             application/json:
               schema:
@@ -23,11 +46,18 @@ paths:
                   $ref: '#/components/schemas/CodeSystem'
   /ValueSet:
     get:
-      summary: Get a list of ValueSets
+      summary: Get a list of ValueSets or search ValueSets by params
       operationId: getValueSets
+      parameters:
+        - name: url
+          in: query
+          description: The URL of the ValueSet to retrieve
+          required: false
+          schema:
+            type: string
       responses:
         '200':
-          description: A list of ValueSets
+          description: A list of ValueSets or a specific ValueSet
           content:
             application/json:
               schema:
@@ -36,11 +66,18 @@ paths:
                   $ref: '#/components/schemas/ValueSet'
   /ConceptMap:
     get:
-      summary: Get a list of ConceptMaps
+      summary: Get a list of ConceptMaps or search ConceptMaps by params
       operationId: getConceptMaps
+      parameters:
+        - name: url
+          in: query
+          description: The URL of the ConceptMap to retrieve
+          required: false
+          schema:
+            type: string
       responses:
         '200':
-          description: A list of ConceptMaps
+          description: A list of ConceptMaps or a specific ConceptMap
           content:
             application/json:
               schema:
@@ -231,16 +268,16 @@ paths:
                 value: "http://snomed.info/sct"
                 summary: "SNOMED CodeSystem"
             racsel:
-              value: "http://racsel.org/fhir/CodeSystem/racsel-cs"
+              value: "http://racsel.org/fhir/CodeSystem/racsel"
               summary: "RACSEL CodeSystem"
             icd_10:
-              value: "http://hl7.org/fhir/sid/icd-10-cs"
+              value: "http://hl7.org/fhir/sid/icd-10"
               summary: "ICD-10 CodeSystem"
             icd_11:
-              value: "http://id.who.int/icd/release/11/mms-cs"
+              value: "http://id.who.int/icd/release/11/mms"
               summary: "ICD-11 CodeSystem"
             local:
-              value: "http://racsel.org/fhir/CodeSystem/local-cs"
+              value: "http://racsel.org/fhir/CodeSystem/local"
               summary: "Local CodeSystem"
         - name: code
           in: query
