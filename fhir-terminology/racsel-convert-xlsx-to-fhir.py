@@ -337,7 +337,7 @@ def convert_to_fhir(file_path):
 
     print(f"FHIR package saved to {output_tgz_path}")
 
-    print(f'Load in Snowstorm with curl --form file=@{output_tgz_path} --form resourceUrls="*" http://localhost:8080/fhir-admin/load-package')
+    print(f'Load in Snowstorm with curl --form file=@{output_tgz_path} --form resourceUrls="*" http://localhost/fhir-admin/load-package')
 
 if __name__ == "__main__":
     main()
