@@ -1,0 +1,546 @@
+openapi: 3.0.1
+info:
+  title: FHIR Resources API
+  description: API for FHIR CodeSystem, ValueSet, and ConceptMap
+  version: 1.0.0
+
+servers:
+  - url: http://localhost/fhir
+
+paths:
+  /CodeSystem:
+    get:
+      summary: Get a list of CodeSystems or search CodeSystems by parameters
+      operationId: getCodeSystems
+      parameters:
+        - name: url
+          in: query
+          description: The URL of the CodeSystem to retrieve
+          required: false
+          schema:
+            type: string
+          examples:
+            snomed:
+                value: "http://snomed.info/sct"
+                summary: "SNOMED CodeSystem"
+            racsel:
+              value: "http://racsel.org/connectathon"
+              summary: "RACSEL CodeSystem"
+            icd_10:
+              value: "http://hl7.org/fhir/sid/icd-10"
+              summary: "ICD-10 CodeSystem"
+            icd_11:
+              value: "http://id.who.int/icd/release/11/mms"
+              summary: "ICD-11 CodeSystem"
+            local:
+              value: "http://node-x.org/terminology"
+              summary: "Local CodeSystem"
+      responses:
+        '200':
+          description: A list of CodeSystems or a specific CodeSystem
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CodeSystem'
+  /ValueSet:
+    get:
+      summary: Get a list of ValueSets or search ValueSets by params
+      operationId: getValueSets
+      parameters:
+        - name: url
+          in: query
+          description: The URL of the ValueSet to retrieve
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of ValueSets or a specific ValueSet
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ValueSet'
+  /ConceptMap:
+    get:
+      summary: Get a list of ConceptMaps or search ConceptMaps by params
+      operationId: getConceptMaps
+      parameters:
+        - name: url
+          in: query
+          description: The URL of the ConceptMap to retrieve
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of ConceptMaps or a specific ConceptMap
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConceptMap'
+  /ValueSet/$expand:
+    get:
+      summary: Expand a ValueSet
+      operationId: expandValueSet
+      parameters:
+        - name: url
+          in: query
+          description: The URL of the ValueSet to expand
+          required: true
+          schema:
+            type: string
+          examples:
+            antecedentes_personales:
+              value: "http://racsel.org/fhir/ValueSet/antecedentes-personales-vs"
+              summary: "Antecedentes Personales ValueSet"
+            antecedentes_personales_racsel:
+              value: "http://racsel.org/fhir/ValueSet/antecedentes-personales-racsel-vs"
+              summary: "Antecedentes Personales RACSEL ValueSet"
+            antecedentes_personales_local:
+              value: "http://racsel.org/fhir/ValueSet/antecedentes-personales-local-vs"
+              summary: "Antecedentes Personales Local ValueSet"
+            diagnosticos:
+              value: "http://racsel.org/fhir/ValueSet/diagnosticos-vs"
+              summary: "Diagnosticos ValueSet"
+            diagnosticos_racsel:
+              value: "http://racsel.org/fhir/ValueSet/diagnosticos-racsel-vs"
+              summary: "Diagnosticos RACSEL ValueSet"
+            diagnosticos_local:
+              value: "http://racsel.org/fhir/ValueSet/diagnosticos-local-vs"
+              summary: "Diagnosticos Local ValueSet"
+            vacunas:
+              value: "http://racsel.org/fhir/ValueSet/vacunas-vs"
+              summary: "Vacunas ValueSet"
+            vacunas_racsel:
+              value: "http://racsel.org/fhir/ValueSet/vacunas-racsel-vs"
+              summary: "Vacunas RACSEL ValueSet"
+            vacunas_local:
+              value: "http://racsel.org/fhir/ValueSet/vacunas-local-vs"
+              summary: "Vacunas Local ValueSet"
+            alergias:
+              value: "http://racsel.org/fhir/ValueSet/alergias-vs"
+              summary: "Alergias ValueSet"
+            alergias_racsel:
+              value: "http://racsel.org/fhir/ValueSet/alergias-racsel-vs"
+              summary: "Alergias RACSEL ValueSet"
+            alergias_local:
+              value: "http://racsel.org/fhir/ValueSet/alergias-local-vs"
+              summary: "Alergias Local ValueSet"
+            medicacion:
+              value: "http://racsel.org/fhir/ValueSet/medicacion-vs"
+              summary: "Medicacion ValueSet"
+            medicacion_racsel:
+              value: "http://racsel.org/fhir/ValueSet/medicacion-racsel-vs"
+              summary: "Medicacion RACSEL ValueSet"
+            medicacion_local:
+              value: "http://racsel.org/fhir/ValueSet/medicacion-local-vs"
+              summary: "Medicacion Local ValueSet"
+            procedimientos:
+              value: "http://racsel.org/fhir/ValueSet/procedimientos-vs"
+              summary: "Procedimientos ValueSet"
+            procedimientos_racsel:
+              value: "http://racsel.org/fhir/ValueSet/procedimientos-racsel-vs"
+              summary: "Procedimientos RACSEL ValueSet"
+            procedimientos_local:
+              value: "http://racsel.org/fhir/ValueSet/procedimientos-local-vs"
+              summary: "Procedimientos Local ValueSet"
+            racsel:
+              value: "http://racsel.org/fhir/ValueSet/racsel-vs"
+              summary: "RACSEL ValueSet"
+            local:
+              value: "http://racsel.org/fhir/ValueSet/local-vs"
+              summary: "Local ValueSet"
+            snomed:
+              value: "http://racsel.org/fhir/ValueSet/snomed-vs"
+              summary: "SNOMED ValueSet"
+            cie10:
+              value: "http://racsel.org/fhir/ValueSet/cie10-vs"
+              summary: "CIE10 ValueSet"
+            cie11:
+              value: "http://racsel.org/fhir/ValueSet/cie11-vs"
+              summary: "CIE11 ValueSet"
+        - name: filter
+          in: query
+          description: Filter the expansion by code or display
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expanded ValueSet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValueSet'
+  /ConceptMap/$translate:
+    get:
+      summary: Translate a concept using a ConceptMap
+      operationId: translateConcept
+      parameters:
+        - name: code
+          in: query
+          description: The code to translate
+          required: true
+          schema:
+            type: string
+        - name: system
+          in: query
+          description: The system of the code to translate
+          required: true
+          schema:
+            type: string
+          examples:
+            snomed:
+                value: "http://snomed.info/sct"
+                summary: "SNOMED CodeSystem"
+            racsel:
+              value: "http://racsel.org/connectathon"
+              summary: "RACSEL CodeSystem"
+            icd_10:
+              value: "http://hl7.org/fhir/sid/icd-10"
+              summary: "ICD-10 CodeSystem"
+            icd_11:
+              value: "http://id.who.int/icd/release/11/mms"
+              summary: "ICD-11 CodeSystem"
+            local:
+              value: "http://node-x.org/terminology"
+              summary: "Local CodeSystem"
+        - name: target
+          in: query
+          description: The target system for the translation
+          required: true
+          schema:
+            type: string
+          examples:
+            snomed:
+                value: "http://snomed.info/sct"
+                summary: "SNOMED CodeSystem"
+            racsel:
+              value: "http://racsel.org/connectathon"
+              summary: "RACSEL CodeSystem"
+            icd_10:
+              value: "http://hl7.org/fhir/sid/icd-10"
+              summary: "ICD-10 CodeSystem"
+            icd_11:
+              value: "http://id.who.int/icd/release/11/mms"
+              summary: "ICD-11 CodeSystem"
+            local:
+              value: "http://node-x.org/terminology"
+              summary: "Local CodeSystem"
+      responses:
+        '200':
+          description: Translation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  resourceType:
+                    type: string
+                    example: Parameters
+                  parameter:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        valueString:
+                          type: string
+  /CodeSystem/$lookup:
+    get:
+      summary: Lookup a code in a CodeSystem
+      operationId: lookupCode
+      parameters:
+        - name: system
+          in: query
+          description: The CodeSystem URL to use for the lookup
+          required: true
+          schema:
+            type: string
+          examples:
+            snomed:
+                value: "http://snomed.info/sct"
+                summary: "SNOMED CodeSystem"
+            racsel:
+              value: "http://racsel.org/fhir/CodeSystem/racsel"
+              summary: "RACSEL CodeSystem"
+            icd_10:
+              value: "http://hl7.org/fhir/sid/icd-10"
+              summary: "ICD-10 CodeSystem"
+            icd_11:
+              value: "http://id.who.int/icd/release/11/mms"
+              summary: "ICD-11 CodeSystem"
+            local:
+              value: "http://racsel.org/fhir/CodeSystem/local"
+              summary: "Local CodeSystem"
+        - name: code
+          in: query
+          description: The code to lookup
+          required: true
+          schema:
+            type: string
+          examples:
+            example_code:
+              value: "12345"
+              summary: "Example code"
+      responses:
+        '200':
+          description: Lookup result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  resourceType:
+                    type: string
+                    example: Parameters
+                  parameter:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        valueString:
+                          type: string
+  /ValueSet/$validate-code:
+    get:
+      summary: Validate a code against a ValueSet
+      operationId: validateCode
+      parameters:
+        - name: url
+          in: query
+          description: The URL of the ValueSet to validate against
+          required: true
+          schema:
+            type: string
+          examples:
+            antecedentes_personales:
+              value: "http://racsel.org/fhir/ValueSet/antecedentes-personales-vs"
+              summary: "Antecedentes Personales ValueSet"
+            antecedentes_personales_racsel:
+              value: "http://racsel.org/fhir/ValueSet/antecedentes-personales-racsel-vs"
+              summary: "Antecedentes Personales RACSEL ValueSet"
+            antecedentes_personales_local:
+              value: "http://racsel.org/fhir/ValueSet/antecedentes-personales-local-vs"
+              summary: "Antecedentes Personales Local ValueSet"
+            diagnosticos:
+              value: "http://racsel.org/fhir/ValueSet/diagnosticos-vs"
+              summary: "Diagnosticos ValueSet"
+            diagnosticos_racsel:
+              value: "http://racsel.org/fhir/ValueSet/diagnosticos-racsel-vs"
+              summary: "Diagnosticos RACSEL ValueSet"
+            diagnosticos_local:
+              value: "http://racsel.org/fhir/ValueSet/diagnosticos-local-vs"
+              summary: "Diagnosticos Local ValueSet"
+            vacunas:
+              value: "http://racsel.org/fhir/ValueSet/vacunas-vs"
+              summary: "Vacunas ValueSet"
+            vacunas_racsel:
+              value: "http://racsel.org/fhir/ValueSet/vacunas-racsel-vs"
+              summary: "Vacunas RACSEL ValueSet"
+            vacunas_local:
+              value: "http://racsel.org/fhir/ValueSet/vacunas-local-vs"
+              summary: "Vacunas Local ValueSet"
+            alergias:
+              value: "http://racsel.org/fhir/ValueSet/alergias-vs"
+              summary: "Alergias ValueSet"
+            alergias_racsel:
+              value: "http://racsel.org/fhir/ValueSet/alergias-racsel-vs"
+              summary: "Alergias RACSEL ValueSet"
+            alergias_local:
+              value: "http://racsel.org/fhir/ValueSet/alergias-local-vs"
+              summary: "Alergias Local ValueSet"
+            medicacion:
+              value: "http://racsel.org/fhir/ValueSet/medicacion-vs"
+              summary: "Medicacion ValueSet"
+            medicacion_racsel:
+              value: "http://racsel.org/fhir/ValueSet/medicacion-racsel-vs"
+              summary: "Medicacion RACSEL ValueSet"
+            medicacion_local:
+              value: "http://racsel.org/fhir/ValueSet/medicacion-local-vs"
+              summary: "Medicacion Local ValueSet"
+            procedimientos:
+              value: "http://racsel.org/fhir/ValueSet/procedimientos-vs"
+              summary: "Procedimientos ValueSet"
+            procedimientos_racsel:
+              value: "http://racsel.org/fhir/ValueSet/procedimientos-racsel-vs"
+              summary: "Procedimientos RACSEL ValueSet"
+            procedimientos_local:
+              value: "http://racsel.org/fhir/ValueSet/procedimientos-local-vs"
+              summary: "Procedimientos Local ValueSet"
+            racsel:
+              value: "http://racsel.org/fhir/ValueSet/racsel-vs"
+              summary: "RACSEL ValueSet"
+            local:
+              value: "http://racsel.org/fhir/ValueSet/local-vs"
+              summary: "Local ValueSet"
+            snomed:
+              value: "http://racsel.org/fhir/ValueSet/snomed-vs"
+              summary: "SNOMED ValueSet"
+            cie10:
+              value: "http://racsel.org/fhir/ValueSet/cie10-vs"
+              summary: "CIE10 ValueSet"
+            cie11:
+              value: "http://racsel.org/fhir/ValueSet/cie11-vs"
+              summary: "CIE11 ValueSet"
+        - name: code
+          in: query
+          description: The code to validate
+          required: true
+          schema:
+            type: string
+          examples:
+            example_code:
+              value: "12345"
+              summary: "Example code"
+        - name: system
+          in: query
+          description: The system of the code to validate
+          schema:
+            type: string
+          examples:
+            snomed:
+                value: "http://snomed.info/sct"
+                summary: "SNOMED CodeSystem"
+            racsel:
+              value: "http://racsel.org/connectathon"
+              summary: "RACSEL CodeSystem"
+            icd_10:
+              value: "http://hl7.org/fhir/sid/icd-10"
+              summary: "ICD-10 CodeSystem"
+            icd_11:
+              value: "http://id.who.int/icd/release/11/mms"
+              summary: "ICD-11 CodeSystem"
+            local:
+              value: "http://node-x.org/terminology"
+              summary: "Local CodeSystem"
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  resourceType:
+                    type: string
+                    example: Parameters
+                  parameter:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        valueString:
+                          type: string
+
+components:
+  schemas:
+    CodeSystem:
+      type: object
+      properties:
+        resourceType:
+          type: string
+          example: CodeSystem
+        id:
+          type: string
+        url:
+          type: string
+        version:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+        content:
+          type: string
+    ValueSet:
+      type: object
+      properties:
+        resourceType:
+          type: string
+          example: ValueSet
+        id:
+          type: string
+        url:
+          type: string
+        version:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+        compose:
+          type: object
+          properties:
+            include:
+              type: array
+              items:
+                type: object
+                properties:
+                  system:
+                    type: string
+                  concept:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                        display:
+                          type: string
+    ConceptMap:
+      type: object
+      properties:
+        resourceType:
+          type: string
+          example: ConceptMap
+        id:
+          type: string
+        url:
+          type: string
+        version:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+        sourceUri:
+          type: string
+        targetUri:
+          type: string
+        group:
+          type: array
+          items:
+            type: object
+            properties:
+              source:
+                type: string
+              target:
+                type: string
+              element:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                    display:
+                      type: string
+                    target:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                          display:
+                            type: string

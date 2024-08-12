@@ -131,8 +131,49 @@ Optionally, if the IPS has more than one `Immunization` resource, you can pass t
 
     curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$ddcc?immunizationId=6fef12e7-64ad-4792-b2ad-5d6b699588fc'
 
-### Terminology Server
+## Terminology Server
 
 An instance of `elasticsearch`, `snowstorm` and `snowstorm-browser` are provided within the docker compose services. Also an initialization script `init_snowstorm.sh` is executed the first time those services are deployed. By default this scripts loads the terms for spanish corpus into the server.
 
+The Snowstorm instance is pre-loaded with the latest version of the Latin-America Spanish Edition.
+
 Check access to the browser by navigating to `http://localhost:8082`
+
+### Converting local terminologies to FHIR (Connectathon 2024)
+
+An [XLSX sepreadsheet](./fhir-terminology/Subsets_Conectathon_Template.xlsx) is provided as a template to facilitate the creation of the necessary terminology artifacts for the connectathon. The spreadsheet provides a mechanism to load local terminologies and mas to SNOMED CT, ICD-10 or ICD-11, as required.
+
+For this exercise, connectathon participants should edit the spreadheet, entering values for any local codes used on their system that matches the refence list of the RACSEL connectathon. This spreadsheet will be converted in FHIR resources using a [custom conversion script](./fhir-terminology/racsel-convert-xlsx-to-fhir.py) provided in this project. All the necessary files are available in the [Terminoloy folder](./fhir-terminology/). All the edits should be performed on the [template spreassheet](./fhir-terminology/Subsets_Conectathon_Template.xlsx), the test data files are only provided for validation purposes.
+
+To run transformation script you need to have [Python installed in your computer](https://www.python.org/downloads/). To execute the conversion use this command (the Python executable can be named python3, python or py depending on your setup):
+
+    python3 racsel-convert-xlsx-to-fhir.py Subsets_Conectathon_Test_Data.xlsx
+
+Users should complete all the necessary fields in the template, and then run the Python script. The result of the script run will be a FHIR Package that incldes all necessary resources:
+- CodeSystems
+    - RACSEL: a code system with all codes in RACSEL common terms
+    - ICD-10 fragment: only the codes used in the connectathon
+    - ICD-11 fragment: only the codes used in the connectathon
+    - Local Code System: the local codes provided by the user
+- ValueSet
+    - SNOMED Value Sets: one per section plus a general value set
+    - ICD-10: all codes
+    - ICD-11: all codes
+    - RACSEL: one per section plus a general value set
+    - Local Codes: one per section plus a general value set
+- ConceptMaps
+    - Local to SNOMED
+    - Local to FHIR
+    - Local to ICD-10
+    - Local to ICD-11
+    - ICD-11 to SNOMED
+    - ICD-10 to SNOMED (Custom reverse map)
+    - SNOMED to ICD-10 (Official map, already included in the SNOMED release)
+
+### Loading FHIR Resources in the terminology server
+
+The previous step generates a FHIR package, the current version of Snowstorm supports loading FHIR resources in the FHIR Package using the "load-package" endpoint.
+
+Example of uploading the package from the command line:
+
+    curl --form file=@racsel_fhir_package.tgz --form resourceUrls="*" http://localhost:8080/fhir-admin/load-package
