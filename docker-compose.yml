@@ -76,7 +76,7 @@ services:
 
 
   snowstorm:
-    image: snomedinternational/snowstorm:10.3.1
+    image: kaikewley/snowstorm:10.4.0-beta
     container_name: snowstorm
     restart: always
     depends_on:
