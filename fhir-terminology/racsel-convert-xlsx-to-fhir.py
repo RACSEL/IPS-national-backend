@@ -37,9 +37,9 @@ def create_value_set_json(name, oid, concepts, uri=snomed_uri):
     }
     return value_set
 
-# Function to extract SNOMED concepts from a dataframe
+# Function to extract SNOMED concepts from a dataframe with unique rows
 def extract_codes(df, code_col, display_col):
-    return df.iloc[2:, [code_col, display_col]].dropna().values.tolist()
+    return df.iloc[2:, [code_col, display_col]].dropna().drop_duplicates().values.tolist()
 
 def extract_maps(df, source_code_col, source_display_col, target_code_col, target_display_col):
     return df.iloc[2:, [source_code_col, source_display_col, target_code_col, target_display_col]].dropna().values.tolist()
