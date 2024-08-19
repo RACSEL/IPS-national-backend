@@ -4,11 +4,15 @@ import uuid
 import tarfile
 import os
 import sys
+import tempfile
+
 
 # Constants
 cie10_uri = "http://hl7.org/fhir/sid/icd-10"
 cie11_uri = "http://id.who.int/icd/release/11/mms"
 snomed_uri = "http://snomed.info/sct"
+
+temp_dir = tempfile.gettempdir()
 
 def main():
     # Check if source file is provided
@@ -314,14 +318,14 @@ def convert_to_fhir(file_path):
     output_tgz_path = "racsel_fhir_package.tgz"
     with tarfile.open(output_tgz_path, "w:gz") as tar:
         # Add the package manifest
-        manifest_path = os.path.join("/tmp", "package.json")
+        manifest_path = os.path.join(temp_dir, "package.json")
         with open(manifest_path, "w", encoding="utf-8") as f:
             json.dump(package_manifest, f, ensure_ascii=False, indent=2)
         tar.add(manifest_path, arcname="package/package.json")
         os.remove(manifest_path)
 
         # Add the .index.json file
-        index_path = os.path.join("/tmp", ".index.json")
+        index_path = os.path.join(temp_dir, ".index.json")
         with open(index_path, "w", encoding="utf-8") as f:
             json.dump(index_file, f, ensure_ascii=False, indent=2)
         tar.add(index_path, arcname="package/.index.json")
