@@ -308,7 +308,7 @@ def convert_to_fhir(file_path):
             loopReference["version"] = resource["version"]
 
         index_file["files"].append(loopReference)
-        package_manifest["resources"].append({"type": resource["resourceType"], "reference": f"{resource["resourceType"]}/{resource["name"]}"})
+        package_manifest["resources"].append({"type": resource["resourceType"], "reference": f"{resource['resourceType']}/{resource['name']}"})
 
     # Create the tgz file
     output_tgz_path = "racsel_fhir_package.tgz"
