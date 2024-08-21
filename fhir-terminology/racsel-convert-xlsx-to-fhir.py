@@ -3,7 +3,6 @@ import json
 import uuid
 import tarfile
 import os
-import sys
 import tempfile
 import argparse
 
