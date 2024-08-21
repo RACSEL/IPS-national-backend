@@ -149,6 +149,10 @@ To run transformation script you need to have [Python installed in your computer
 
     python3 racsel-convert-xlsx-to-fhir.py Subsets_Conectathon_Test_Data.xlsx
 
+There is an option parameter to split the local code system by domain (Diagnosis, medication, etc), this is required if the local codes can overlap between different domains, i.e. if a diagonosisc an have the same local code as a medication. Yo use this split conversion you can run:
+
+    python3 racsel-convert-xlsx-to-fhir.py Subsets_Conectathon_Test_Data.xlsx -splitcs
+
 Users should complete all the necessary fields in the template, and then run the Python script. The result of the script run will be a FHIR Package that incldes all necessary resources:
 - CodeSystems
     - RACSEL: a code system with all codes in RACSEL common terms
