@@ -167,9 +167,57 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=adminips
       - POSTGRES_DB=ips
+  
+  gdhcn-validator-service:
+    container_name: gdhcn-validator-service
+    image: createchile/gdhcn-validator_backend:latest
+    ports:
+      - 8182:8080
+    secrets:
+      - tls-pem
+      - tls-key
+      - dsc-private
+    environment:
+      - POSTGRES_DB=gdhcn-validator
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://gdhcn-db:5432/gdhcn-validator
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - TNG_TLS_PEM=/run/secrets/tls-pem
+      - TNG_TLS_KEY=/run/secrets/tls-key
+      - TNG_DSC_PRIVATEKEY=/run/secrets/dsc-private
+      - TNG_COUNTRY=XL
+      - TNG_DSC_PRIVATEKEY_KID=UUuJcwmjoJM=
+      - GDHCN_BASEURL=http://lacpass.create.cl:8182
+    networks:
+      - spring-postgres
+    volumes:
+      - ./json:/json
+
+  gdhcn-db:
+    image: postgres
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - spring-postgres
+    environment:
+      - POSTGRES_DB=gdhcn-validator
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
 
 networks:
   elastic:
+  spring-postgres:
 
 volumes:
   snowstorm_preload:
+  db-data:
+
+secrets:
+  dsc-private:
+    file: cert-data/DSCpriv.key
+  tls-key:
+    file: cert-data/TLS.key
+  tls-pem:
+    file: cert-data/TLS.pem
