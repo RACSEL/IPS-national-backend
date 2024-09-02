@@ -12,6 +12,7 @@ The services created by the compose are:
  - Bundle signer service
  - IPS Mediator for MHD Transactions
  - IPS to DDCC transformation operation
+ - Verifiable Health Links (VHL) service 
 
 > **Note**:
 > The services require at least 12GB of ram to run.
@@ -177,3 +178,22 @@ The previous step generates a FHIR package, the current version of Snowstorm sup
 Example of uploading the package from the command line:
 
     curl --form file=@racsel_fhir_package.tgz --form resourceUrls="*" http://localhost:8080/fhir-admin/load-package
+
+## Verifiable Health Links
+
+This docker compose contains an image of the Verifiable Health Link (VHL) service for the generation and issuance of VHLs. The Docker Compose file includes a pre-built, improved image of the service for easy deployment. However, you may review the implementation in the official repository for this project: https://github.com/gdhcnentomo/entomo-gdhcn-validator.
+
+To run this service correctly, you MUST be onboarded into the DEV environment of the GDHCN trust network https://github.com/WorldHealthOrganization/tng-cdn-dev. You will need to place these three certificates inside the `cert-data` folder:
+
+- The TLS certificates: `TLS.pem` (public key) and `TLS.key` (private key) for authenticating to the trust network.
+- The Document Signer Certificate private key: `DSCpriv.key` to sign the VHL.
+
+After that, you should modify the following environment variables in the docker-compose.yml file:
+
+- `TNG_COUNTRY`: The 2-letter country code.
+- `TNG_DSC_PRIVATEKEY_KID`: The Key Identifier (KID) for the Document Signer Certificate (DSC).
+- `GDHCN_BASEURL`: The base URL for the VHL service. It should be publicly accessible for verification.
+
+Once all these configurations are done, the service should start. By default, this service runs on port 8182 and deploys a web API to issue and verify VHLs.
+
+Swagger documentation is provided within the service. Please navigate to http://localhost:8182/swagger-ui/index.html to view the endpoints and their documentation.
