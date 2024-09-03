@@ -5,6 +5,8 @@ import tarfile
 import os
 import tempfile
 import argparse
+import sys
+
 
 
 # Constants
