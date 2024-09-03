@@ -210,7 +210,7 @@ paths:
             local:
               value: "http://node-x.org/terminology"
               summary: "Local CodeSystem"
-        - name: target
+        - name: targetsystem
           in: query
           description: The target system for the translation
           required: true

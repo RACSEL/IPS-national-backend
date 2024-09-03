@@ -3,8 +3,10 @@ import json
 import uuid
 import tarfile
 import os
-import sys
 import tempfile
+import argparse
+import sys
+
 
 
 # Constants
@@ -15,12 +17,17 @@ snomed_uri = "http://snomed.info/sct"
 temp_dir = tempfile.gettempdir()
 
 def main():
-    # Check if source file is provided
-    if len(sys.argv) > 1:
-        print(f"Source file: {sys.argv[1]}")
-        convert_to_fhir(sys.argv[1])
-    else:
-        print("Error: No data filename provided")
+    parser = argparse.ArgumentParser(description="Process a source file with optional splitcs flag.")
+    parser.add_argument("source_file", help="The source file to process")
+    parser.add_argument("-splitcs", action="store_true", help="Splits local codesystem into separate resources by domain")
+
+    args = parser.parse_args()
+
+    print(f"Source file: {args.source_file}")
+    print(f"Split Local Code Systems: {'Enabled' if args.splitcs else 'Disabled'}")
+
+    convert_to_fhir(args.source_file, args.splitcs)
+
 
 # Function to create a ValueSet JSON manually
 def create_value_set_json(name, oid, concepts, uri=snomed_uri):
@@ -82,6 +89,11 @@ def create_concept_map(map_values, sourceUri, targetUri, name):
     }
     
     # Add group if there map values
+    add_group_to_concept_map(conceptMap, sourceUri, targetUri, map_values)
+
+    return conceptMap
+
+def add_group_to_concept_map(conceptMap, sourceUri, targetUri, map_values):
     if len(map_values) > 0:
         conceptMap["group"].append({
             "source": sourceUri,
@@ -89,11 +101,8 @@ def create_concept_map(map_values, sourceUri, targetUri, name):
             "element": [{"code": sourceCode, "display": sourceDisplay, "target": [{"code": targetCode, "display": targetDisplay, "equivalence": "equivalent"}]} for sourceCode, sourceDisplay, targetCode, targetDisplay in map_values]
         })
 
-
-    return conceptMap
-
 # Function to convert the Excel file to FHIR
-def convert_to_fhir(file_path):
+def convert_to_fhir(file_path, splitcs=False):
     # Load all sheets into dataframes
     antecedentes_df = pd.read_excel(file_path, sheet_name='Antecedentes Personales ')
     diagnosticos_df = pd.read_excel(file_path, sheet_name='Diagnósticos')
@@ -187,22 +196,22 @@ def convert_to_fhir(file_path):
     # Create ValueSet JSONs
     antecedentes_value_set_json = create_value_set_json("AntecedentesPersonalesValueSet", "antecedentes-personales-vs", antecedentes_concepts)
     antecentes_racsel_value_set_json = create_value_set_json("AntecedentesPersonalesRacselValueSet", "antecedentes-personales-racsel-vs", antecedentes_racsel, racselConnectathonUri)
-    antecentes_local_value_set_json = create_value_set_json("AntecedentesPersonalesLocalValueSet", "antecedentes-personales-local-vs", antecedentes_local, local_uri)
+    antecentes_local_value_set_json = create_value_set_json("AntecedentesPersonalesLocalValueSet", "antecedentes-personales-local-vs", antecedentes_local, local_uri + '/antecedentes' if splitcs else local_uri)
     diagnosticos_value_set_json = create_value_set_json("DiagnosticosValueSet", "diagnosticos-vs", diagnosticos_concepts)
     diagnosticos_racsel_value_set_json = create_value_set_json("DiagnosticosRacselValueSet", "diagnosticos-racsel-vs", diagnosticos_racsel, racselConnectathonUri)
-    diagnosticos_local_value_set_json = create_value_set_json("DiagnosticosLocalValueSet", "diagnosticos-local-vs", diagnosticos_local, local_uri)
+    diagnosticos_local_value_set_json = create_value_set_json("DiagnosticosLocalValueSet", "diagnosticos-local-vs", diagnosticos_local, local_uri + '/diagnosticos' if splitcs else local_uri)
     vacunas_value_set_json = create_value_set_json("VacunasValueSet", "vacunas-vs", vacunas_concepts)
     vacunas_racsel_value_set_json = create_value_set_json("VacunasRacselValueSet", "vacunas-racsel-vs", vacunas_racsel, racselConnectathonUri)
-    vacunas_local_value_set_json = create_value_set_json("VacunasLocalValueSet", "vacunas-local-vs", vacunas_local, local_uri)
+    vacunas_local_value_set_json = create_value_set_json("VacunasLocalValueSet", "vacunas-local-vs", vacunas_local, local_uri + '/vacunas' if splitcs else local_uri)
     alergias_value_set_json = create_value_set_json("AlergiasValueSet", "alergias-vs", alergias_concepts)
     alergias_racsel_value_set_json = create_value_set_json("AlergiasRacselValueSet", "alergias-racsel-vs", alergias_racsel, racselConnectathonUri)
-    alergias_local_value_set_json = create_value_set_json("AlergiasLocalValueSet", "alergias-local-vs", alergias_local, local_uri)
+    alergias_local_value_set_json = create_value_set_json("AlergiasLocalValueSet", "alergias-local-vs", alergias_local, local_uri + '/alergias' if splitcs else local_uri)
     medicacion_value_set_json = create_value_set_json("MedicacionValueSet", "medicacion-vs", medicacion_concepts)
     medicacion_racsel_value_set_json = create_value_set_json("MedicacionRacselValueSet", "medicacion-racsel-vs", medicacion_racsel, racselConnectathonUri)
-    medicacion_local_value_set_json = create_value_set_json("MedicacionLocalValueSet", "medicacion-local-vs", medicacion_local, local_uri)
+    medicacion_local_value_set_json = create_value_set_json("MedicacionLocalValueSet", "medicacion-local-vs", medicacion_local, local_uri + '/medicacion' if splitcs else local_uri)
     procedimientos_value_set_json = create_value_set_json("ProcedimientosValueSet", "procedimientos-vs", procedimientos_concepts)
     procedimientos_racsel_value_set_json = create_value_set_json("ProcedimientosRacselValueSet", "procedimientos-racsel-vs", procedimientos_racsel, racselConnectathonUri)
-    procedimientos_local_value_set_json = create_value_set_json("ProcedimientosLocalValueSet", "procedimientos-local-vs", procedimientos_local, local_uri)
+    procedimientos_local_value_set_json = create_value_set_json("ProcedimientosLocalValueSet", "procedimientos-local-vs", procedimientos_local, local_uri + '/procedimientos' if splitcs else local_uri)
     racsel_value_set_json = create_value_set_json("RACSELValueSet", "racsel-vs", antecedentes_racsel + diagnosticos_racsel + vacunas_racsel + alergias_racsel + medicacion_racsel + procedimientos_racsel, racselConnectathonUri)
     cie10_value_set_json = create_value_set_json("CIE10ValueSet", "cie10-vs", antecedentes_cie10 + diagnosticos_cie10, cie10_uri)
     cie11_value_set_json = create_value_set_json("CIE11ValueSet", "cie11-vs", vacunas_cie11, cie11_uri)
@@ -210,26 +219,81 @@ def convert_to_fhir(file_path):
     snomed_value_set_json = create_value_set_json("SNOMEDValueSet", "snomed-vs", antecedentes_concepts + diagnosticos_concepts + vacunas_concepts + alergias_concepts + medicacion_concepts + procedimientos_concepts, snomed_uri)  
 
     # Create CodeSystem JSONs
+    if (splitcs):
+        conceptes_local_dfs_antecedentes = [antecedentes_local]
+        code_system_local_json_antecedentes = create_code_system_fragment(conceptes_local_dfs_antecedentes, local_uri + "/antecedentes", "LocalAntecedentesCodeSystem")
+        conceptes_local_dfs_diagnosticos = [diagnosticos_local]
+        code_system_local_json_diagnosticos = create_code_system_fragment(conceptes_local_dfs_diagnosticos, local_uri + "/diagnosticos", "LocalDiagnosticosCodeSystem")
+        conceptes_local_dfs_vacunas = [vacunas_local]
+        code_system_local_json_vacunas = create_code_system_fragment(conceptes_local_dfs_vacunas, local_uri + "/vacunas", "LocalVacunasCodeSystem")
+        conceptes_local_dfs_alergias = [alergias_local]
+        code_system_local_json_alergias = create_code_system_fragment(conceptes_local_dfs_alergias, local_uri + "/alergias", "LocalAlergiasCodeSystem")
+        conceptes_local_dfs_medicacion = [medicacion_local]
+        code_system_local_json_medicacion = create_code_system_fragment(conceptes_local_dfs_medicacion, local_uri + "/medicacion", "LocalMedicacionCodeSystem")
+        conceptes_local_dfs_procedimientos = [procedimientos_local]
+        code_system_local_json_procedimientos = create_code_system_fragment(conceptes_local_dfs_procedimientos, local_uri + "/procedimientos", "LocalProcedimientosCodeSystem")
+    else:
+        conceptes_local_dfs = [antecedentes_local, diagnosticos_local, vacunas_local, alergias_local, medicacion_local, procedimientos_local]
+        code_system_local_json = create_code_system_fragment(conceptes_local_dfs, local_uri, "LocalCodeSystem")
+        
     concepts_dfs = [antecedentes_racsel, diagnosticos_racsel, vacunas_racsel, alergias_racsel, medicacion_racsel, procedimientos_racsel]
     code_system_json = create_code_system_fragment(concepts_dfs, racselConnectathonUri, "RACSELCodeSystem")
     concepts_cie10_dfs = [antecedentes_cie10, diagnosticos_cie10]
     code_system_cie10_json = create_code_system_fragment(concepts_cie10_dfs, cie10_uri, "icd-10")
     concepts_cie11_dfs = [vacunas_cie11]
     code_system_cie11_json = create_code_system_fragment(concepts_cie11_dfs, cie11_uri, "icd-11")
-    conceptes_local_dfs = [antecedentes_local, diagnosticos_local, vacunas_local, alergias_local, medicacion_local, procedimientos_local]
-    code_system_local_json = create_code_system_fragment(conceptes_local_dfs, local_uri, "LocalCodeSystem")
 
     # Create Conceptmap JSONs
-    local_to_racsel_map_json = create_concept_map(local_to_racsel, local_uri, racselConnectathonUri, "Local to RACSEL")
-    local_to_snomed_map_json = create_concept_map(local_to_snomed, local_uri, snomed_uri, "Local to SNOMED")
-    local_to_cie10_map_json = create_concept_map(local_to_cie10, local_uri, cie10_uri, "Local to CIE10")
-    local_to_cie11_map_json = create_concept_map(local_to_cie11, local_uri, cie11_uri, "Local to CIE11")
+    if (splitcs == False):
+        local_to_racsel_map_json = create_concept_map(local_to_racsel, local_uri, racselConnectathonUri, "Local to RACSEL")
+        local_to_snomed_map_json = create_concept_map(local_to_snomed, local_uri, snomed_uri, "Local to SNOMED")
+        local_to_cie10_map_json = create_concept_map(local_to_cie10, local_uri, cie10_uri, "Local to CIE10")
+        local_to_cie11_map_json = create_concept_map(local_to_cie11, local_uri, cie11_uri, "Local to CIE11")
+        racsel_to_local_map_json = create_concept_map(racsel_to_local, racselConnectathonUri, local_uri, "RACSEL to Local")
+        cie10_to_local_map_json = create_concept_map(cie10_to_local, cie10_uri, local_uri, "CIE10 to Local")
+        cie11_to_local_map_json = create_concept_map(cie11_to_local, cie11_uri, local_uri, "CIE11 to Local")
+        snomed_to_local_map_json = create_concept_map(snomed_to_local, snomed_uri, local_uri, "SNOMED to Local")
+    else:
+        local_antecedentes_to_racsel_map_json = create_concept_map(antecedentes_local_to_racsel, local_uri + '/antecedentes', racselConnectathonUri, "Local Antecedentes to RACSEL")
+        local_diagnosticos_to_racsel_map_json = create_concept_map(diagnosticos_local_to_racsel, local_uri + '/diagnosticos', racselConnectathonUri, "Local Diagnosticos to RACSEL")
+        local_vacunas_to_racsel_map_json = create_concept_map(vacunas_local_to_racsel, local_uri + '/vacunas', racselConnectathonUri, "Local Vacunas to RACSEL")
+        local_alergias_to_racsel_map_json = create_concept_map(alergias_local_to_racsel, local_uri + '/alergias', racselConnectathonUri, "Local Alergias to RACSEL")
+        local_medicacion_to_racsel_map_json = create_concept_map(medicacion_local_to_racsel, local_uri + '/medicacion', racselConnectathonUri, "Local Medicacion to RACSEL")
+        local_procedimientos_to_racsel_map_json = create_concept_map(procedimientos_local_to_racsel, local_uri + '/procedimientos', racselConnectathonUri, "Local Procedimientos to RACSEL")
+
+        local_antecedentes_to_snomed_map_json = create_concept_map(antecedentes_local_to_snomed, local_uri + '/antecedentes', snomed_uri, "Local Antecedentes to SNOMED")
+        local_diagnosticos_to_snomed_map_json = create_concept_map(diagnosticos_local_to_snomed, local_uri + '/diagnosticos', snomed_uri, "Local Diagnosticos to SNOMED")
+        local_vacunas_to_snomed_map_json = create_concept_map(vacunas_local_to_snomed, local_uri + '/vacunas', snomed_uri, "Local Vacunas to SNOMED")
+        local_alergias_to_snomed_map_json = create_concept_map(alergias_local_to_snomed, local_uri + '/alergias', snomed_uri, "Local Alergias to SNOMED")
+        local_medicacion_to_snomed_map_json = create_concept_map(medicacion_local_to_snomed, local_uri + '/medicacion', snomed_uri, "Local Medicacion to SNOMED")
+        local_procedimientos_to_snomed_map_json = create_concept_map(procedimientos_local_to_snomed, local_uri + '/procedimientos', snomed_uri, "Local Procedimientos to SNOMED")
+
+        local_antecedentes_to_cie10_map_json = create_concept_map(antecedentes_local_to_cie10, local_uri + '/antecedentes', cie10_uri, "Local Antecedentes to CIE10")
+        local_diagnosticos_to_cie10_map_json = create_concept_map(diagnosticos_local_to_cie10, local_uri + '/diagnosticos', cie10_uri, "Local Diagnosticos to CIE10")
+
+        local_to_cie11_map_json = create_concept_map(local_to_cie11, local_uri + '/vacunas', cie11_uri, "Local to CIE11")
+
+        racsel_to_local_antecedentes_map_json = create_concept_map(antecedentes_racsel_to_local, racselConnectathonUri, local_uri  + '/antecedentes', "RACSEL to Local Antecedentes")
+        racsel_to_local_diagnosticos_map_json = create_concept_map(diagnosticos_racsel_to_local, racselConnectathonUri, local_uri + '/diagnosticos', "RACSEL to Local Diagnosticos")
+        racsel_to_local_vacunas_map_json = create_concept_map(vacunas_racsel_to_local, racselConnectathonUri, local_uri + '/vacunas', "RACSEL to Local Vacunas")
+        racsel_to_local_alergias_map_json = create_concept_map(alergias_racsel_to_local, racselConnectathonUri, local_uri + '/alergias', "RACSEL to Local Alergias")
+        racsel_to_local_medicacion_map_json = create_concept_map(medicacion_racsel_to_local, racselConnectathonUri, local_uri + '/medicacion', "RACSEL to Local Medicacion")
+        racsel_to_local_procedimientos_map_json = create_concept_map(procedimientos_racsel_to_local, racselConnectathonUri, local_uri + '/procedimientos', "RACSEL to Local Procedimientos")
+        
+        cie10_to_local_antecedentes_map_json = create_concept_map(antecedentes_cie10_to_local, cie10_uri, local_uri + '/antecedentes', "CIE10 to Local Antecedentes")
+        cie10_to_local_diagnosticos_map_json = create_concept_map(diagnosticos_cie10_to_local, cie10_uri, local_uri + '/diagnosticos', "CIE10 to Local Diagnosticos")
+
+        cie11_to_local_map_json = create_concept_map(cie11_to_local, cie11_uri, local_uri + '/vacunas', "CIE11 to Local")
+        
+        snomed_to_local_antecedentes_map_json = create_concept_map(antecedentes_snomed_to_local, snomed_uri, local_uri + '/antecedentes', "SNOMED to Local Antecedentes")
+        snomed_to_local_diagnosticos_map_json = create_concept_map(diagnosticos_snomed_to_local, snomed_uri, local_uri + '/diagnosticos', "SNOMED to Local Diagnosticos")
+        snomed_to_local_vacunas_map_json = create_concept_map(vacunas_snomed_to_local, snomed_uri, local_uri + '/vacunas', "SNOMED to Local Vacunas")
+        snomed_to_local_alergias_map_json = create_concept_map(alergias_snomed_to_local, snomed_uri, local_uri + '/alergias', "SNOMED to Local Alergias")
+        snomed_to_local_medicacion_map_json = create_concept_map(medicacion_snomed_to_local, snomed_uri, local_uri + '/medicacion', "SNOMED to Local Medicacion")
+        snomed_to_local_procedimientos_map_json = create_concept_map(procedimientos_snomed_to_local, snomed_uri, local_uri + '/procedimientos', "SNOMED to Local Procedimientos")
+    
     cie10_to_snomed_map_json = create_concept_map(cie10_to_snomed, cie10_uri, snomed_uri, "CIE10 to SNOMED")
     cie11_to_snomed_map_json = create_concept_map(cie11_to_snomed, cie11_uri, snomed_uri, "CIE11 to SNOMED")
-    racsel_to_local_map_json = create_concept_map(racsel_to_local, racselConnectathonUri, local_uri, "RACSEL to Local")
-    cie10_to_local_map_json = create_concept_map(cie10_to_local, cie10_uri, local_uri, "CIE10 to Local")
-    cie11_to_local_map_json = create_concept_map(cie11_to_local, cie11_uri, local_uri, "CIE11 to Local")
-    snomed_to_local_map_json = create_concept_map(snomed_to_local, snomed_uri, local_uri, "SNOMED to Local")
     snomed_to_cie10_map_json = create_concept_map(snomed_to_cie10, snomed_uri, cie10_uri, "SNOMED to CIE10")
     snomed_to_cie11_map_json = create_concept_map(snomed_to_cie11, snomed_uri, cie11_uri, "SNOMED to CIE11")
 
@@ -279,23 +343,75 @@ def convert_to_fhir(file_path):
         (snomed_value_set_json, "package/ValueSet/SNOMEDValueSet.json"),
         (cie10_value_set_json, "package/ValueSet/CIE10ValueSet.json"),
         (cie11_value_set_json, "package/ValueSet/CIE11ValueSet.json"),
-        (code_system_json, "package/CodeSystem/RACSELCodeSystem.json"),
         (code_system_cie10_json, "package/CodeSystem/icd-10.json"),
         (code_system_cie11_json, "package/CodeSystem/icd-11.json"),
-        (code_system_local_json, "package/CodeSystem/LocalCodeSystem.json"),
-        (local_to_racsel_map_json, "package/ConceptMap/Local-to-RACSEL.json"),
-        (local_to_snomed_map_json, "package/ConceptMap/Local-to-SNOMED.json"),
-        (local_to_cie10_map_json, "package/ConceptMap/Local-to-CIE10.json"),
-        (local_to_cie11_map_json, "package/ConceptMap/Local-to-CIE11.json"),
+        (code_system_json, "package/CodeSystem/RACSELCodeSystem.json"),
         (cie10_to_snomed_map_json, "package/ConceptMap/CIE10-to-SNOMED.json"),
         (cie11_to_snomed_map_json, "package/ConceptMap/CIE11-to-SNOMED.json"),
-        (racsel_to_local_map_json, "package/ConceptMap/RACSEL-to-Local.json"),
-        (cie10_to_local_map_json, "package/ConceptMap/CIE10-to-Local.json"),
-        (cie11_to_local_map_json, "package/ConceptMap/CIE11-to-Local.json"),
-        (snomed_to_local_map_json, "package/ConceptMap/SNOMED-to-Local.json"),
         (snomed_to_cie10_map_json, "package/ConceptMap/SNOMED-to-CIE10.json"),
         (snomed_to_cie11_map_json, "package/ConceptMap/SNOMED-to-CIE11.json")
     ]
+    
+    if (splitcs):
+        # Adding split local code systems
+        resources.extend([
+            (code_system_local_json_antecedentes, "package/CodeSystem/LocalAntecedentesCodeSystem.json"),
+            (code_system_local_json_diagnosticos, "package/CodeSystem/LocalDiagnosticosCodeSystem.json"),
+            (code_system_local_json_vacunas, "package/CodeSystem/LocalVacunasCodeSystem.json"),
+            (code_system_local_json_alergias, "package/CodeSystem/LocalAlergiasCodeSystem.json"),
+            (code_system_local_json_medicacion, "package/CodeSystem/LocalMedicacionCodeSystem.json"),
+            (code_system_local_json_procedimientos, "package/CodeSystem/LocalProcedimientosCodeSystem.json")
+        ])
+
+        # Adding split local maps
+        resources.extend([
+            (local_antecedentes_to_racsel_map_json, "package/ConceptMap/Local-Antecedentes-to-RACSEL.json"),
+            (local_diagnosticos_to_racsel_map_json, "package/ConceptMap/Local-Diagnosticos-to-RACSEL.json"),
+            (local_vacunas_to_racsel_map_json, "package/ConceptMap/Local-Vacunas-to-RACSEL.json"),
+            (local_alergias_to_racsel_map_json, "package/ConceptMap/Local-Alergias-to-RACSEL.json"),
+            (local_medicacion_to_racsel_map_json, "package/ConceptMap/Local-Medicacion-to-RACSEL.json"),
+            (local_procedimientos_to_racsel_map_json, "package/ConceptMap/Local-Procedimientos-to-RACSEL.json"),
+            (local_antecedentes_to_snomed_map_json, "package/ConceptMap/Local-Antecedentes-to-SNOMED.json"),
+            (local_diagnosticos_to_snomed_map_json, "package/ConceptMap/Local-Diagnosticos-to-SNOMED.json"),
+            (local_vacunas_to_snomed_map_json, "package/ConceptMap/Local-Vacunas-to-SNOMED.json"),
+            (local_alergias_to_snomed_map_json, "package/ConceptMap/Local-Alergias-to-SNOMED.json"),
+            (local_medicacion_to_snomed_map_json, "package/ConceptMap/Local-Medicacion-to-SNOMED.json"),
+            (local_procedimientos_to_snomed_map_json, "package/ConceptMap/Local-Procedimientos-to-SNOMED.json"),
+            (local_antecedentes_to_cie10_map_json, "package/ConceptMap/Local-Antecedentes-to-CIE10.json"),
+            (local_diagnosticos_to_cie10_map_json, "package/ConceptMap/Local-Diagnosticos-to-CIE10.json"),
+            (local_to_cie11_map_json, "package/ConceptMap/Local-to-CIE11.json"),
+            (racsel_to_local_antecedentes_map_json, "package/ConceptMap/RACSEL-to-Local-Antecedentes.json"),
+            (racsel_to_local_diagnosticos_map_json, "package/ConceptMap/RACSEL-to-Local-Diagnosticos.json"),
+            (racsel_to_local_vacunas_map_json, "package/ConceptMap/RACSEL-to-Local-Vacunas.json"),
+            (racsel_to_local_alergias_map_json, "package/ConceptMap/RACSEL-to-Local-Alergias.json"),
+            (racsel_to_local_medicacion_map_json, "package/ConceptMap/RACSEL-to-Local-Medicacion.json"),
+            (racsel_to_local_procedimientos_map_json, "package/ConceptMap/RACSEL-to-Local-Procedimientos.json"),
+            (cie10_to_local_antecedentes_map_json, "package/ConceptMap/CIE10-to-Local-Antecedentes.json"),
+            (cie10_to_local_diagnosticos_map_json, "package/ConceptMap/CIE10-to-Local-Diagnosticos.json"),
+            (cie11_to_local_map_json, "package/ConceptMap/CIE11-to-Local.json"),
+            (snomed_to_local_antecedentes_map_json, "package/ConceptMap/SNOMED-to-Local-Antecedentes.json"),
+            (snomed_to_local_diagnosticos_map_json, "package/ConceptMap/SNOMED-to-Local-Diagnosticos.json"),
+            (snomed_to_local_vacunas_map_json, "package/ConceptMap/SNOMED-to-Local-Vacunas.json"),
+            (snomed_to_local_alergias_map_json, "package/ConceptMap/SNOMED-to-Local-Alergias.json"),
+            (snomed_to_local_medicacion_map_json, "package/ConceptMap/SNOMED-to-Local-Medicacion.json"),
+            (snomed_to_local_procedimientos_map_json, "package/ConceptMap/SNOMED-to-Local-Procedimientos.json")
+        ])
+
+    else:
+        # Adding local code system
+        resources.append((code_system_local_json, "package/CodeSystem/LocalCodeSystem.json"))
+
+        # Adding local to racsel maps
+        resources.extend([
+            (local_to_racsel_map_json, "package/ConceptMap/Local-to-RACSEL.json"),
+            (local_to_snomed_map_json, "package/ConceptMap/Local-to-SNOMED.json"),
+            (local_to_cie10_map_json, "package/ConceptMap/Local-to-CIE10.json"),
+            (local_to_cie11_map_json, "package/ConceptMap/Local-to-CIE11.json"),
+            (racsel_to_local_map_json, "package/ConceptMap/RACSEL-to-Local.json"),
+            (cie10_to_local_map_json, "package/ConceptMap/CIE10-to-Local.json"),
+            (cie11_to_local_map_json, "package/ConceptMap/CIE11-to-Local.json"),
+            (snomed_to_local_map_json, "package/ConceptMap/SNOMED-to-Local.json")
+        ])
 
     # Add resources to manifests
     for resource, filename in resources:
@@ -341,7 +457,7 @@ def convert_to_fhir(file_path):
 
     print(f"FHIR package saved to {output_tgz_path}")
 
-    print(f'Load in Snowstorm with curl --form file=@{output_tgz_path} --form resourceUrls="*" http://localhost/fhir-admin/load-package')
+    print(f'Load in Snowstorm with curl --form file=@{output_tgz_path} --form resourceUrls="*" http://localhost/fhir-admin/load-package (or equivalent in windows)')
 
 if __name__ == "__main__":
     main()
