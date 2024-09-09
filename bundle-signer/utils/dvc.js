@@ -204,13 +204,13 @@ function createQR(){
 }
 
 function addAnswer(qr, name, value){
+  let i = qr.item.findIndex(e => e["linkId"] == name);
   if(value == null){
     if (i !== -1) {
       qr.item.splice(i, 1); // Remove the item if value is null
     }
     return qr;
   }
-  let i = qr.item.findIndex(e => e["linkId"] == name);
   let q = qr.item[i]["answer"][0];
   if(q.valueString){
       qr.item[i]["answer"][0]["valueString"] = value;
@@ -265,7 +265,7 @@ function buildDVCQR(patient, immunization, organization, composition){
     qr = addItem(qr, "guardian", patient["contact"]?.[0]?.["name"]?.[0]?.["given"].join(" ") + " " + patient["contact"]?.[0]?.["name"]?.[0]?.["family"] || null, "guardianName");
     qr = addItem(qr, "guardian", patient["contact"]?.[0]?.["relationship"]?.["coding"]?.[0]?.["code"] || null, "guardianRelationship");
 
-    //vaccineTradeItem 
+    qr = addAnswer(qr, "vaccineTradeItem", immunization["identifier"]?.[0]?.["value"] || null);
     //clinicianName
     qr = addItem(qr, "vaccineDetails", immunization["manufacturer"]?.["reference"] || null, "issuer");
     qr = addItem(qr, "vaccineDetails", organization["identifier"]?.[0]?.["value"] || null, "manufacturerId");
