@@ -245,12 +245,29 @@ function addItem(qr, name, value, itemName){
 
 }
 
+function mapDoseNumber(doseNumber) {
+  switch (doseNumber) {
+    case 1:
+      return 'firstDose';
+    case 2:
+      return 'secondDose';
+    case 3:
+      return 'thirdDose';
+    case 4:
+      return 'fourthDose';
+    case 5:
+      return 'fifthDose';
+    default:
+      return 'supplementary';  // Para cualquier número mayor que 5
+  }
+}
+
 function buildDVCQR(patient, immunization, organization, composition){
     let qr = createQR();
     //items obligatorios
     qr = addAnswer(qr, "name", patient["name"][0]["given"].join(" ") + " " + patient["name"][0]["family"]);
     qr = addAnswer(qr, "dob", patient["birthDate"]);
-    qr = addItem(qr, "vaccineDetails", immunization["protocolApplied"] ? immunization["protocolApplied"][0]["doseNumberPositiveInt"] || 1 : 1, "doseNumber");
+    qr = addItem(qr, "vaccineDetails", immunization["protocolApplied"] ? mapDoseNumber(immunization["protocolApplied"][0]["doseNumberPositiveInt"] || 1) : 'firstDose', "doseNumber");
     qr = addItem(qr, "vaccineDetails", immunization["protocolApplied"][0]["targetDisease"][0]["coding"][0]["code"], "disease");
     qr = addItem(qr, "vaccineDetails", immunization["vaccineCode"]["coding"][0]["code"], "vaccineClassification");
     qr = addItem(qr, "vaccineDetails", immunization["occurrenceDateTime"], "date");
@@ -259,19 +276,24 @@ function buildDVCQR(patient, immunization, organization, composition){
 
     //opcionales
     qr = addAnswer(qr, "sex", patient["gender"] || null);
-    qr = addAnswer(qr, "nationality", patient["address"]?.[0]?.["country"] || null);
+    let ext = patient["extension"] ? patient["extension"].find(e => e["url"].indexOf("/StructureDefinition/patient-nationality") >= 0) : null;
+    if(ext && ext["valueCodeableConcept"] && ext["valueCodeableConcept"]["coding"] && ext["valueCodeableConcept"]["coding"]["code"]){
+      qr = addAnswer(qr, "nationality", ext["valueCodeableConcept"]["coding"]["code"]);
+    } else {
+      qr = addAnswer(qr, "nationality", null);
+    }
     qr = addAnswer(qr, "nid", patient["identifier"]?.[1]?.["value"] || null);
 
-    qr = addItem(qr, "guardian", patient["contact"]?.[0]?.["name"]?.[0]?.["given"].join(" ") + " " + patient["contact"]?.[0]?.["name"]?.[0]?.["family"] || null, "guardianName");
+    qr = addItem(qr, "guardian", patiient["contact"]?.[0]?.["name"]?.[0]?.["given"].join(" ") + " " + patient["contact"]?.[0]?.["name"]?.[0]?.["family"] || null, "guardianName");
     qr = addItem(qr, "guardian", patient["contact"]?.[0]?.["relationship"]?.["coding"]?.[0]?.["code"] || null, "guardianRelationship");
 
-    qr = addAnswer(qr, "vaccineTradeItem", immunization["identifier"]?.[0]?.["value"] || null);
-    //clinicianName
+    //qr = addAnswer(qr, "vaccineTradeItem", immunization["identifier"]?.[0]?.["value"] || null);
+    qr = addItem(qr, "vaccineDetails", immunization["performer"]?.["reference"] || null, "clinicianName");
     qr = addItem(qr, "vaccineDetails", immunization["manufacturer"]?.["reference"] || null, "issuer");
     qr = addItem(qr, "vaccineDetails", organization["identifier"]?.[0]?.["value"] || null, "manufacturerId");
-    let vaccineDetailsId = qr.item.findIndex(e => e["linkId"] == "vaccineDetails");
-    qr[vaccineDetailsId] = addItem(vaccineDetails, "validityPeriod", immunization["occurrenceDateTime"] || null, "startDate");
-    qr[vaccineDetailsId] = addItem(vaccineDetails, "validityPeriod", immunization["expirationDate"] || null, "endDate");
+    //let vaccineDetailsId = qr.item.findIndex(e => e["linkId"] == "vaccineDetails");
+    //qr[vaccineDetailsId] = addItem(vaccineDetails, "validityPeriod", immunization["occurrenceDateTime"] || null, "startDate");
+    //qr[vaccineDetailsId] = addItem(vaccineDetails, "validityPeriod", immunization["expirationDate"] || null, "endDate");
 
     return qr 
 }
