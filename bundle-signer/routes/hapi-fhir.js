@@ -297,10 +297,23 @@ router.get("/Bundle/:id/([\$])dvc", async (req, res) => {
     // console.log(patient, immunization);
 
     let qr = buildDVCQR(patient, immunization, organization, composition);
-    console.log(JSON.stringify(qr));
+    let bundle = {
+      "resourceType": "Bundle",
+      "type": "batch",
+      "entry": [
+        {
+          "resource": qr,
+          "request": {
+            "method": "POST",
+            "url": "QuestionnaireResponse/$generateHealthCertificate"
+          }
+        }
+      ]
+    }
+    console.log(JSON.stringify(bundle));
 
     console.log(DDCC_URL);
-    let resp = await axios.post(DDCC_URL, qr);
+    let resp = await axios.post("http://lacpass.create.cl:4321/icvp/", bundle);
     res.status(resp.status).send(resp.data);
   }
   catch (e) {

@@ -273,6 +273,7 @@ function buildDVCQR(patient, immunization, organization, composition){
     qr = addItem(qr, "vaccineDetails", immunization["occurrenceDateTime"], "date");
     qr = addItem(qr, "vaccineDetails", organization["name"], "manufacturer");
     qr = addItem(qr, "vaccineDetails", immunization["lotNumber"], "batchNo");
+    
 
     //opcionales
     qr = addAnswer(qr, "sex", patient["gender"] || null);
@@ -282,9 +283,15 @@ function buildDVCQR(patient, immunization, organization, composition){
     } else {
       qr = addAnswer(qr, "nationality", null);
     }
-    qr = addAnswer(qr, "nid", patient["identifier"]?.[1]?.["value"] || null);
+    const taxIdentifier = patient["identifier"]?.find(id => 
+      id["type"]?.["coding"]?.some(coding => coding["code"] === "TAX")
+    )?.["value"] || null;
+    qr = addAnswer(qr, "nid", taxIdentifier);
 
-    qr = addItem(qr, "guardian", patiient["contact"]?.[0]?.["name"]?.[0]?.["given"].join(" ") + " " + patient["contact"]?.[0]?.["name"]?.[0]?.["family"] || null, "guardianName");
+    const guardianGiven = patient["contact"]?.[0]?.["name"]?.[0]?.["given"]?.join(" ") || "";
+    const guardianFamily = patient["contact"]?.[0]?.["name"]?.[0]?.["family"] || "";
+    const guardianName = (guardianGiven + " " + guardianFamily).trim() || null;
+    qr = addItem(qr, "guardian", guardianName, "guardianName");
     qr = addItem(qr, "guardian", patient["contact"]?.[0]?.["relationship"]?.["coding"]?.[0]?.["code"] || null, "guardianRelationship");
 
     //qr = addAnswer(qr, "vaccineTradeItem", immunization["identifier"]?.[0]?.["value"] || null);
