@@ -276,31 +276,31 @@ function buildDVCQR(patient, immunization, organization, composition){
     
 
     //opcionales
-    // qr = addAnswer(qr, "sex", patient["gender"] || null);
-    // let ext = patient["extension"] ? patient["extension"].find(e => e["url"].indexOf("/StructureDefinition/patient-nationality") >= 0) : null;
-    // if(ext && ext["valueCodeableConcept"] && ext["valueCodeableConcept"]["coding"] && ext["valueCodeableConcept"]["coding"]["code"]){
-    //   qr = addAnswer(qr, "nationality", ext["valueCodeableConcept"]["coding"]["code"]);
-    // } else {
-    //   qr = addAnswer(qr, "nationality", null);
-    // }
-   // const taxIdentifier = patient["identifier"]?.find(id => 
-    //  id["type"]?.["coding"]?.some(coding => coding["code"] === "TAX")
-    //)?.["value"] || null;
-   //qr = addAnswer(qr, "nid", taxIdentifier);
+    qr = addAnswer(qr, "sex", patient["gender"] || null);
+    let ext = patient["extension"] ? patient["extension"].find(e => e["url"].indexOf("/StructureDefinition/patient-nationality") >= 0) : null;
+    if(ext && ext["valueCodeableConcept"] && ext["valueCodeableConcept"]["coding"] && ext["valueCodeableConcept"]["coding"]["code"]){
+      qr = addAnswer(qr, "nationality", ext["valueCodeableConcept"]["coding"]["code"]);
+    } else {
+      qr = addAnswer(qr, "nationality", null);
+    }
+   const taxIdentifier = patient["identifier"]?.find(id => 
+     id["type"]?.["coding"]?.some(coding => coding["code"] === "TAX")
+    )?.["value"] || null;
+   qr = addAnswer(qr, "nid", taxIdentifier);
 
     const guardianGiven = patient["contact"]?.[0]?.["name"]?.[0]?.["given"]?.join(" ") || "";
     const guardianFamily = patient["contact"]?.[0]?.["name"]?.[0]?.["family"] || "";
     const guardianName = (guardianGiven + " " + guardianFamily).trim() || null;
-    //qr = addItem(qr, "guardian", guardianName, "guardianName");
-    //qr = addItem(qr, "guardian", patient["contact"]?.[0]?.["relationship"]?.["coding"]?.[0]?.["code"] || null, "guardianRelationship");
+    qr = addItem(qr, "guardian", guardianName, "guardianName");
+    qr = addItem(qr, "guardian", patient["contact"]?.[0]?.["relationship"]?.["coding"]?.[0]?.["code"] || null, "guardianRelationship");
 
-    //qr = addAnswer(qr, "vaccineTradeItem", immunization["identifier"]?.[0]?.["value"] || null);
-    //qr = addItem(qr, "vaccineDetails", immunization["performer"]?.["reference"] || null, "clinicianName");
-    //qr = addItem(qr, "vaccineDetails", immunization["manufacturer"]?.["reference"] || null, "issuer");
-    //qr = addItem(qr, "vaccineDetails", organization["identifier"]?.[0]?.["value"] || null, "manufacturerId");
-    //let vaccineDetailsId = qr.item.findIndex(e => e["linkId"] == "vaccineDetails");
-    //qr[vaccineDetailsId] = addItem(vaccineDetails, "validityPeriod", immunization["occurrenceDateTime"] || null, "startDate");
-    //qr[vaccineDetailsId] = addItem(vaccineDetails, "validityPeriod", immunization["expirationDate"] || null, "endDate");
+    qr = addAnswer(qr, "vaccineTradeItem", immunization["identifier"]?.[0]?.["value"] || null);
+    qr = addItem(qr, "vaccineDetails", immunization["performer"]?.["reference"] || null, "clinicianName");
+    qr = addItem(qr, "vaccineDetails", immunization["manufacturer"]?.["reference"] || null, "issuer");
+    qr = addItem(qr, "vaccineDetails", organization["identifier"]?.[0]?.["value"] || null, "manufacturerId");
+    let vaccineDetailsId = qr.item.findIndex(e => e["linkId"] == "vaccineDetails");
+    qr.item[vaccineDetailsId] = addItem(qr.item[vaccineDetailsId], "validityPeriod", immunization["occurrenceDateTime"] || null, "startDate");
+    qr.item[vaccineDetailsId] = addItem(qr.item[vaccineDetailsId], "validityPeriod", immunization["expirationDate"] || null, "endDate");
 
     return qr 
 }
