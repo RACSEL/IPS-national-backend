@@ -294,7 +294,7 @@ function buildDVCQR(patient, immunization, organization, composition){
     qr = addItem(qr, "guardian", guardianName, "guardianName");
     qr = addItem(qr, "guardian", patient["contact"]?.[0]?.["relationship"]?.["coding"]?.[0]?.["code"] || null, "guardianRelationship");
 
-    qr = addAnswer(qr, "vaccineTradeItem", immunization["identifier"]?.[0]?.["value"] || null);
+    qr = addItem(qr, "vaccineDetails", immunization["identifier"]?.[0]?.["value"] || null, "vaccineTradeItem");
     qr = addItem(qr, "vaccineDetails", immunization["performer"]?.["reference"] || null, "clinicianName");
     qr = addItem(qr, "vaccineDetails", immunization["manufacturer"]?.["reference"] || null, "issuer");
     qr = addItem(qr, "vaccineDetails", organization["identifier"]?.[0]?.["value"] || null, "manufacturerId");
