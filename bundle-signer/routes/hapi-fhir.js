@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require("uuid");
 const canonicalize = require('../utils/canonicalize');
 const { createDocumentReference, createSubmissionSet } = require('../utils/transactions');
 const { buildDDCCQR } = require('../utils/ddcc');
+const { buildDVCQR } = require('../utils/dvc');
 
 const router = express.Router();
 
@@ -247,6 +248,72 @@ router.get("/Bundle/:id/([\$])ddcc", async (req, res) => {
 
     console.log(DDCC_URL);
     let resp = await axios.post(DDCC_URL, qr);
+    res.status(resp.status).send(resp.data);
+  }
+  catch (e) {
+    res.status(500);
+    res.end("ERROR");
+  }
+});
+
+router.get("/Bundle/:id/([\$])dvc", async (req, res) => {
+  try {
+    console.log("TEST");
+    const FHIR_URL = req.app.get('hapiFhir');
+    const DDCC_URL = req.app.get('ddccURL');
+
+    const url = `${FHIR_URL}/Bundle/${req.params.id}`;
+
+    let ips = await axios.get(url).catch(err => {
+      console.error(err);
+      return { error: true };
+    });
+    ips = ips.data;
+    if (!ips) {
+      res.status(400).send({ "error": "IPS is empty or not valid" });
+      return;
+    }
+
+    let { immunizationId, organizationId } = req.query;
+
+    let patient = ips.entry.find(e => e.resource && e.resource.resourceType == "Patient");
+    let immunization = immunizationId ?
+      ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization" && (e.resource.id == immunizationId || e.fullUrl.indexOf(immunizationId) >= 0)) :
+      ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization");
+    let organization = organizationId ?
+      ips.entry.find(e => e.resource && e.resource.resourceType == "Organization" && (e.resource.id == organizationId || e.fullUrl.indexOf(organizationId) >= 0)) :
+      ips.entry.find(e => e.resource && e.resource.resourceType == "Organization");
+    let composition = ips.entry.find(e => e.resource && e.resource.resourceType == "Composition");
+
+    if (!patient || !immunization || !organization || !composition) {
+      res.status(400).send({ "error": "IPS has no patient or immunization or organization or compoosition" });
+      return;
+    }
+
+    patient = patient.resource;
+    immunization = immunization.resource;
+    organization = organization.resource;
+    composition = composition.resource;
+    // console.log(patient, immunization);
+
+    let qr = buildDVCQR(patient, immunization, organization, composition);
+    let bundle = {
+      "resourceType": "Bundle",
+      "type": "batch",
+      "entry": [
+        {
+          "resource": qr,
+          "request": {
+            "method": "POST",
+            "url": "QuestionnaireResponse/$generateHealthCertificate"
+          }
+        }
+      ]
+    }
+    console.log(JSON.stringify(bundle));
+
+    console.log(DDCC_URL);
+    let resp = await axios.post("http://lacpass.create.cl:4321/icvp/", bundle);
     res.status(resp.status).send(resp.data);
   }
   catch (e) {
