@@ -8,10 +8,10 @@ The services created by the compose are:
  - Snowstorm (SNOMED CT Terminology server)
  - Snowstorm Browser (Web UI for Snowstorm)
  - LACPass IPS Viewer
- - DDCC Mediator IPS and service
+ - DVC Mediator IPS and service
  - Bundle signer service
  - IPS Mediator for MHD Transactions
- - IPS to DDCC transformation operation
+ - IPS to DVC transformation operation
  - Verifiable Health Links (VHL) service 
 
 > **Note**:
@@ -62,7 +62,7 @@ COUNTRY_CODE: 'ARG'
 
 In all cases, replace `localhost` with your server IP if needed.
 
-### IPS Transactions
+### MHD Transactions
 
 This repository includes the IPS mediator service which is a FHIR interceptor or API Gateway that transforms the incoming request to implement MHD Transactions. 
 
@@ -118,19 +118,19 @@ Example command:
 
 ### Transformations
 
-The IPS mediator includes a FHIR operation called `$ddcc` which transforms IPS Bundles to DDCC documents. It is mandatory for this operation to work that the stored IPS have at least one `Immunization` resource.
+The IPS mediator includes a FHIR operation called `$dvc` which transforms IPS Bundles to DVC documents. It is mandatory for this operation to work that the stored IPS have at least one `Immunization` resource compliant with the DVC standard.
 
 This is an example to use the transformation oepration:
 
-    curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$ddcc'
+    curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$dvc'
 
-Where `fb06a834-6b55-4ac3-a856-82489eb4d69d` is the id of the IPS Bundle. This endpoint returns the DDCC Bundle associated to the requested IPS.
+Where `fb06a834-6b55-4ac3-a856-82489eb4d69d` is the id of the IPS Bundle. This endpoint returns the DVC Bundle associated to the requested IPS.
 
-This transformation retrieves a previously stored IPS and checks whether the `Immunization` resource is present. The process extracts the information from the IPS to build the QuestionnaryResponse with the DDCC structure. This QuestionnarieResponse is sent to the DDCC module to generate the document.
+This transformation retrieves a previously stored IPS and checks whether the `Immunization` resource is present. The process extracts the information from the IPS to build the QuestionnaryResponse with the DVC structure. This QuestionnarieResponse is sent to the DVC module to generate the document.
 
 Optionally, if the IPS has more than one `Immunization` resource, you can pass the query argument `immunizationId` to specify the id of the `Immunization` resource tto transform. For example:
 
-    curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$ddcc?immunizationId=6fef12e7-64ad-4792-b2ad-5d6b699588fc'
+    curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$dvc?immunizationId=6fef12e7-64ad-4792-b2ad-5d6b699588fc'
 
 ## Terminology Server
 
