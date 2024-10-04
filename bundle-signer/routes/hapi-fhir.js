@@ -313,7 +313,7 @@ router.get("/Bundle/:id/([\$])dvc", async (req, res) => {
     console.log(JSON.stringify(bundle));
 
     console.log(DDCC_URL);
-    let resp = await axios.post("http://lacpass.create.cl:4321/icvp/", bundle);
+    let resp = await axios.post(DDCC_URL + "icvp/", bundle);
     res.status(resp.status).send(resp.data);
   }
   catch (e) {
