@@ -141,15 +141,6 @@ services:
     ports:
         - "8023:8080"
 
-  ips-app:
-    container_name: ips-app
-    image: createchile/ipsapp_app:latest
-    depends_on:
-      database-app:
-        condition: service_healthy
-    ports:
-      - "8085:5002"
-
   database-app:
     image: postgres
     restart: always
@@ -170,7 +161,7 @@ services:
   
   gdhcn-validator-service:
     container_name: gdhcn-validator-service
-    image: createchile/gdhcn-validator_backend:latest
+    image: createchile/gdhcn-validator_backend:v1.1
     ports:
       - 8182:8080
     secrets:
