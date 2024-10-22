@@ -317,6 +317,7 @@ router.get("/Bundle/:id/([\$])dvc", async (req, res) => {
     res.status(resp.status).send(resp.data);
   }
   catch (e) {
+    console.error(e);
     res.status(500);
     res.end("ERROR");
   }
