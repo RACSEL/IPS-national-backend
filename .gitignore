@@ -4,8 +4,10 @@
 .github
 .DS_Store
 postgres-data
+postgres-data-app/
 snomed/elastic
 mongo-data
+.snowstorm-init-status/
 
 *.pem
 *.cer
