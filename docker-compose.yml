@@ -1,52 +1,5 @@
 version: '3.8'
 services:
-  hapi-fhir:
-    image: "hapiproject/hapi:latest"
-    depends_on:
-      - hapi-db
-    volumes:
-      - ./hapi-config:/data/hapi
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_CONFIG_LOCATION: 'file:///data/hapi/application.yaml'
-      SPRING_DATASOURCE_URL: 'jdbc:postgresql://hapi-db:5433/root'
-      SPRING_DATASOURCE_USERNAME: 'root'
-      SPRING_DATASOURCE_PASSWORD: 'hapifhir2023'
-      SPRING_DATASOURCE_DRIVERCLASSNAME: 'org.postgresql.Driver'
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: 'ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgres94Dialect'
-
-  hapi-db:
-    image: "postgres:14.6"
-    restart: always
-    user: root
-    environment:
-      POSTGRES_DB: "root"
-      POSTGRES_USER: "root"
-      POSTGRES_PASSWORD: "hapifhir2023"
-    volumes:
-      - ./postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready" ]
-      interval: 20s
-      timeout: 10s
-      retries: 5
-    command: -p 5433
-    
-  hapi-fhir-bundle-signer:
-    build:
-      context: ./bundle-signer
-    ports:
-      - "3000:3000"
-    environment:
-      NODE_ENV: "production"
-      PROD_HAPI_FHIR: "http://hapi-fhir:8080"
-      DDCC_URL: "http://ddcc:4321/"
-      EXTERNAL_HAPI_FHIR: "http://lacpass.create.cl:8080/fhir"
-      PROD_PRIVATE_KEY_FILE: "./static/key.pem"
-    volumes:
-      - ./bundle-signer/static:/usr/src/app/static
-
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
@@ -117,98 +70,38 @@ services:
     entrypoint: /bin/sh -c 'sh /usr/local/bin/init_snowstorm.sh'
     networks:
       - elastic
-
-
-  ddcc:
-    container_name: ddcc-transactions-mediator
-    image: censcl/ops-ddcc-transactions-mediator-lacpass-ips:v2.0
-    environment:
-      FHIR_SERVER: 'http://hapi-fhir:8080/fhir/'
-      MATCHBOX_SERVER: 'http://resource-generation-service:8080/fhir/'
-      PRIVATE_KEY_FILE: '/app/cert-data/DSC01privkey.key'
-      PUBLIC_KEY_FILE: '/app/cert-data/DSCcert.pem'
-      COUNTRY_CODE: 'XCL'
-    volumes:
-      - ./cert-data:/app/cert-data
+  swagger-ui:
+    image: swaggerapi/swagger-ui
     ports:
-      - "4321:4321"
+      - "8089:8080"
+    volumes:
+      - ./fhir-terminology/connectathon-swagger.yaml:/usr/share/nginx/html/connectathon-swagger.yaml:ro
+    environment:
+      - SWAGGER_JSON=/connectathon-swagger.yaml
+      - VALIDATOR_URL=null
+    networks:
+      - elastic
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - resource-generation-service
-
-  resource-generation-service:
-    container_name: resource-generation-service
-    image: censcl/ops-ddcc-resource-generation-service:v2.0
-    ports:
-        - "8023:8080"
-
-  database-app:
-    image: postgres
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d ips"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./init-db-app:/docker-entrypoint-initdb.d/
-      - ./postgres-data-app:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=adminips
-      - POSTGRES_DB=ips
-  
-  gdhcn-validator-service:
-    container_name: gdhcn-validator-service
-    image: createchile/gdhcn-validator_backend:v1.1
-    ports:
-      - 8182:8080
-    secrets:
-      - tls-pem
-      - tls-key
-      - dsc-private
-    environment:
-      - POSTGRES_DB=gdhcn-validator
-      - SERVER_PORT=8080
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://gdhcn-db:5432/gdhcn-validator
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
-      - TNG_TLS_PEM=/run/secrets/tls-pem
-      - TNG_TLS_KEY=/run/secrets/tls-key
-      - TNG_DSC_PRIVATEKEY=/run/secrets/dsc-private
-      - TNG_COUNTRY=XL
-      - TNG_DSC_PRIVATEKEY_KID=UUuJcwmjoJM=
-      - GDHCN_BASEURL=http://lacpass.create.cl:8182
+      - snowstorm-browser
+      - swagger-ui
+      - snowstorm
     networks:
-      - spring-postgres
-    volumes:
-      - ./json:/json
-
-  gdhcn-db:
-    image: postgres
-    restart: always
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    networks:
-      - spring-postgres
-    environment:
-      - POSTGRES_DB=gdhcn-validator
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=root
+      elastic:
+        aliases:
+         - nginx
 
 networks:
   elastic:
-  spring-postgres:
 
 volumes:
   snowstorm_preload:
   db-data:
 
-secrets:
-  dsc-private:
-    file: cert-data/DSCpriv.key
-  tls-key:
-    file: cert-data/TLS.key
-  tls-pem:
-    file: cert-data/TLS.pem
