@@ -17,3 +17,7 @@ certs
 did.txt
 /fhir-terminology/package
 /fhir-terminology/*.tgz
+
+postgres-data-app
+json
+.snowstorm-init-status

@@ -40,7 +40,7 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: "production"
-      PROD_HAPI_FHIR: "http://hapi-fhir:8080"
+      PROD_HAPI_FHIR: "http://lacpass.create.cl:8080"
       DDCC_URL: "http://ddcc:4321/"
       EXTERNAL_HAPI_FHIR: "http://lacpass.create.cl:8080/fhir"
       PROD_PRIVATE_KEY_FILE: "./static/key.pem"
@@ -121,7 +121,7 @@ services:
 
   ddcc:
     container_name: ddcc-transactions-mediator
-    image: censcl/ops-ddcc-transactions-mediator-lacpass-ips:v2.0
+    image: censcl/ops-ddcc-transactions-mediator-lacpass-ips:v3.0
     environment:
       FHIR_SERVER: 'http://hapi-fhir:8080/fhir/'
       MATCHBOX_SERVER: 'http://resource-generation-service:8080/fhir/'
@@ -137,27 +137,9 @@ services:
 
   resource-generation-service:
     container_name: resource-generation-service
-    image: censcl/ops-ddcc-resource-generation-service:v2.0
+    image: censcl/ops-ddcc-resource-generation-service:v3.0
     ports:
         - "8023:8080"
-
-  database-app:
-    image: postgres
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d ips"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./init-db-app:/docker-entrypoint-initdb.d/
-      - ./postgres-data-app:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=adminips
-      - POSTGRES_DB=ips
   
   gdhcn-validator-service:
     container_name: gdhcn-validator-service
@@ -177,8 +159,8 @@ services:
       - TNG_TLS_PEM=/run/secrets/tls-pem
       - TNG_TLS_KEY=/run/secrets/tls-key
       - TNG_DSC_PRIVATEKEY=/run/secrets/dsc-private
-      - TNG_COUNTRY=XL
-      - TNG_DSC_PRIVATEKEY_KID=UUuJcwmjoJM=
+      - TNG_COUNTRY=XJ
+      - TNG_DSC_PRIVATEKEY_KID=I1BAX8FATLs=
       - GDHCN_BASEURL=http://lacpass.create.cl:8182
     networks:
       - spring-postgres
