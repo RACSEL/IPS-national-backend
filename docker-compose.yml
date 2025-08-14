@@ -41,7 +41,7 @@ services:
     environment:
       NODE_ENV: "production"
       PROD_HAPI_FHIR: "http://lacpass.create.cl:8080"
-      DDCC_URL: "http://ddcc:4321/ddcc"
+      DDCC_URL: "http://ddcc:4321/"
       EXTERNAL_HAPI_FHIR: "http://lacpass.create.cl:8080/fhir"
       PROD_PRIVATE_KEY_FILE: "./static/key.pem"
     volumes:

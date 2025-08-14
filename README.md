@@ -7,11 +7,10 @@ The services created by the compose are:
  - Elastic Search (Used by Snowstorm) 
  - Snowstorm (SNOMED CT Terminology server)
  - Snowstorm Browser (Web UI for Snowstorm)
- - LACPass IPS Viewer
  - DVC Mediator IPS and service
  - Bundle signer service
  - IPS Mediator for MHD Transactions
- - IPS to DVC transformation operation
+ - IPS to DVC/ICVP transformation operation
  - Verifiable Health Links (VHL) service 
 
 > **Note**:
@@ -131,6 +130,19 @@ This transformation retrieves a previously stored IPS and checks whether the `Im
 Optionally, if the IPS has more than one `Immunization` resource, you can pass the query argument `immunizationId` to specify the id of the `Immunization` resource tto transform. For example:
 
     curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$dvc?immunizationId=6fef12e7-64ad-4792-b2ad-5d6b699588fc'
+
+
+The IPS mediator also includes a FHIR operation called `$icvp` which transforms IPS Bundles to DVC/ICVP documents. It is mandatory for this operation to work that the stored IPS have at least one `Immunization` resource compliant with the DVC/ICVP standard.
+
+This is an example to use the transformation oepration:
+
+    curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$icvp'
+
+Where `fb06a834-6b55-4ac3-a856-82489eb4d69d` is the id of the IPS Bundle. This endpoint returns the DVC Bundle associated to the requested IPS.
+
+Similarly, if the IPS has more than one `Immunization` resource, you can pass the query argument `immunizationId` to specify the id of the `Immunization` resource tto transform. For example:
+
+    curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$icvp?immunizationId=6fef12e7-64ad-4792-b2ad-5d6b699588fc'
 
 ## Terminology Server
 

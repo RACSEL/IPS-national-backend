@@ -209,7 +209,7 @@ function addItem(qr, name, value, itemName) {
 
 }
 
-function buildICVPQR(patient, immunization, organization, composition) {
+function buildICVPQR(patient, immunization) {
     let qr = createQRICVP();
     //items obligatorios
     qr = addAnswer(qr, "name", patient["name"][0]["text"] || (patient["name"][0]["given"].join(" ") + " " + patient["name"][0]["family"]));

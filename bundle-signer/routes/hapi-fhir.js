@@ -340,28 +340,22 @@ router.get("/Bundle/:id/([\$])icvp", async (req, res) => {
       return;
     }
 
-    let { immunizationId, organizationId } = req.query;
+    let { immunizationId } = req.query;
 
     let patient = ips.entry.find(e => e.resource && e.resource.resourceType == "Patient");
     let immunization = immunizationId ?
       ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization" && (e.resource.id == immunizationId || e.fullUrl.indexOf(immunizationId) >= 0)) :
       ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization");
-    let organization = organizationId ?
-      ips.entry.find(e => e.resource && e.resource.resourceType == "Organization" && (e.resource.id == organizationId || e.fullUrl.indexOf(organizationId) >= 0)) :
-      ips.entry.find(e => e.resource && e.resource.resourceType == "Organization");
-    let composition = ips.entry.find(e => e.resource && e.resource.resourceType == "Composition");
-
-    if (!patient || !immunization || !organization || !composition) {
-      res.status(400).send({ "error": "IPS has no patient or immunization or organization or compoosition" });
+    
+    if (!patient || !immunization) {
+      res.status(400).send({ "error": "IPS has no patient or immunization" });
       return;
     }
 
     patient = patient.resource;
     immunization = immunization.resource;
-    organization = organization.resource;
-    composition = composition.resource;
 
-    let qr = buildICVPQR(patient, immunization, organization, composition);
+    let qr = buildICVPQR(patient, immunization);
     if (qr == null){
       res.status(422).send({
         error: "IPS has missing information to create ICVP"
