@@ -6,6 +6,7 @@ const canonicalize = require('../utils/canonicalize');
 const { createDocumentReference, createSubmissionSet } = require('../utils/transactions');
 const { buildDDCCQR } = require('../utils/ddcc');
 const { buildDVCQR } = require('../utils/dvc');
+const { buildICVPQR } = require('../utils/icvp');
 
 const router = express.Router();
 
@@ -258,7 +259,6 @@ router.get("/Bundle/:id/([\$])ddcc", async (req, res) => {
 
 router.get("/Bundle/:id/([\$])dvc", async (req, res) => {
   try {
-    console.log("TEST");
     const FHIR_URL = req.app.get('hapiFhir');
     const DDCC_URL = req.app.get('ddccURL');
 
@@ -313,6 +313,76 @@ router.get("/Bundle/:id/([\$])dvc", async (req, res) => {
     console.log(JSON.stringify(bundle));
 
     console.log(DDCC_URL);
+    let resp = await axios.post(DDCC_URL + "icvp/", bundle);
+    res.status(resp.status).send(resp.data);
+  }
+  catch (e) {
+    console.error(e);
+    res.status(500);
+    res.end("ERROR");
+  }
+});
+
+router.get("/Bundle/:id/([\$])icvp", async (req, res) => {
+  try {
+    const FHIR_URL = req.app.get('hapiFhir');
+    const DDCC_URL = req.app.get('ddccURL');
+
+    const url = `${FHIR_URL}/Bundle/${req.params.id}`;
+
+    let ips = await axios.get(url).catch(err => {
+      console.error(err);
+      return { error: true };
+    });
+    ips = ips.data;
+    if (!ips) {
+      res.status(400).send({ "error": "IPS is empty or not valid" });
+      return;
+    }
+
+    let { immunizationId, organizationId } = req.query;
+
+    let patient = ips.entry.find(e => e.resource && e.resource.resourceType == "Patient");
+    let immunization = immunizationId ?
+      ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization" && (e.resource.id == immunizationId || e.fullUrl.indexOf(immunizationId) >= 0)) :
+      ips.entry.find(e => e.resource && e.resource.resourceType == "Immunization");
+    let organization = organizationId ?
+      ips.entry.find(e => e.resource && e.resource.resourceType == "Organization" && (e.resource.id == organizationId || e.fullUrl.indexOf(organizationId) >= 0)) :
+      ips.entry.find(e => e.resource && e.resource.resourceType == "Organization");
+    let composition = ips.entry.find(e => e.resource && e.resource.resourceType == "Composition");
+
+    if (!patient || !immunization || !organization || !composition) {
+      res.status(400).send({ "error": "IPS has no patient or immunization or organization or compoosition" });
+      return;
+    }
+
+    patient = patient.resource;
+    immunization = immunization.resource;
+    organization = organization.resource;
+    composition = composition.resource;
+
+    let qr = buildICVPQR(patient, immunization, organization, composition);
+    if (qr == null){
+      res.status(422).send({
+        error: "IPS has missing information to create ICVP"
+      });
+      return;
+    }
+
+    let bundle = {
+      "resourceType": "Bundle",
+      "type": "batch",
+      "entry": [
+        {
+          "resource": qr,
+          "request": {
+            "method": "POST",
+            "url": "QuestionnaireResponse/$generateHealthCertificate"
+          }
+        }
+      ]
+    }
+    console.log(JSON.stringify(bundle));
     let resp = await axios.post(DDCC_URL + "icvp/", bundle);
     res.status(resp.status).send(resp.data);
   }
