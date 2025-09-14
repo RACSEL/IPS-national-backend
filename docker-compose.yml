@@ -118,10 +118,37 @@ services:
     networks:
       - elastic
 
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8089:8080"
+    volumes:
+      - ./fhir-terminology/connectathon-swagger.yaml:/usr/share/nginx/html/connectathon-swagger.yaml:ro
+    environment:
+      - URL=http://lacpass.create.cl:8089/connectathon-swagger.yaml
+      - VALIDATOR_URL=null
+    networks:
+      - elastic
+
+  nginx-terminology:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "8090:80"
+    volumes:
+      - ./fhir-terminology/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - snowstorm-browser
+      - swagger-ui
+      - snowstorm
+    networks:
+      elastic:
+        aliases:
+         - nginx
 
   ddcc:
     container_name: ddcc-transactions-mediator
-    image: censcl/ops-ddcc-transactions-mediator-lacpass-ips:v3.0
+    image: censcl/ops-ddcc-transactions-mediator-lacpass-ips:v3.1
     environment:
       FHIR_SERVER: 'http://hapi-fhir:8080/fhir/'
       MATCHBOX_SERVER: 'http://resource-generation-service:8080/fhir/'
