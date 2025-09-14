@@ -118,6 +118,33 @@ services:
     networks:
       - elastic
 
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8089:8080"
+    volumes:
+      - ./fhir-terminology/connectathon-swagger.yaml:/usr/share/nginx/html/connectathon-swagger.yaml:ro
+    environment:
+      - SWAGGER_JSON=/connectathon-swagger.yaml
+      - VALIDATOR_URL=null
+    networks:
+      - elastic
+
+  nginx-terminology:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "8090:80"
+    volumes:
+      - ./fhir-terminology/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - snowstorm-browser
+      - swagger-ui
+      - snowstorm
+    networks:
+      elastic:
+        aliases:
+         - nginx
 
   ddcc:
     container_name: ddcc-transactions-mediator
