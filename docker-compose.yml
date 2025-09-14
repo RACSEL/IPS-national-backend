@@ -148,7 +148,7 @@ services:
 
   ddcc:
     container_name: ddcc-transactions-mediator
-    image: censcl/ops-ddcc-transactions-mediator-lacpass-ips:v3.0
+    image: censcl/ops-ddcc-transactions-mediator-lacpass-ips:v3.1
     environment:
       FHIR_SERVER: 'http://hapi-fhir:8080/fhir/'
       MATCHBOX_SERVER: 'http://resource-generation-service:8080/fhir/'
