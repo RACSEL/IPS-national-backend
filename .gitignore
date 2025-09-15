@@ -12,3 +12,6 @@ mongo-data
 *.key
 *.p8
 elastic
+lacchain-postgres-data
+certs
+did.txt

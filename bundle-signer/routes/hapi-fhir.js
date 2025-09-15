@@ -130,7 +130,7 @@ router.all('/Bundle', async (req, res) => {
 
       // Add bundle to the entries
       transaction.entry.push({
-        fullUrl: "Bundle/" + docId,
+        fullUrl: "urn:uuid:" + docId,
         resource: JSON.parse(JSON.stringify(bundleIPS)),
         request: { method: "POST", url: 'Bundle' },
       });
