@@ -15,3 +15,5 @@ elastic
 lacchain-postgres-data
 certs
 did.txt
+/fhir-terminology/package
+/fhir-terminology/*.tgz

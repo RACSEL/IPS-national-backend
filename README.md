@@ -8,10 +8,11 @@ The services created by the compose are:
  - Snowstorm (SNOMED CT Terminology server)
  - Snowstorm Browser (Web UI for Snowstorm)
  - LACPass IPS Viewer
- - DDCC Mediator IPS and service
+ - DVC Mediator IPS and service
  - Bundle signer service
  - IPS Mediator for MHD Transactions
- - IPS to DDCC transformation operation
+ - IPS to DVC transformation operation
+ - Verifiable Health Links (VHL) service 
 
 > **Note**:
 > The services require at least 12GB of ram to run.
@@ -20,6 +21,7 @@ The services created by the compose are:
 
 - Docker version >20.10.8 
 - Docker compose version >1.29.2
+- HAPI FHIR 6.0.1+
 
 
 To run the services use: 
@@ -34,7 +36,7 @@ If you need to change any of the default value, you can edit `docker-compose.yml
 
 In particular you should change the variable `EXTERNAL_HAPI_FHIR` to the actual public URL to the FHIR server.
 
-You need to provide a private key(**DSC01privkey.key**) and cert(**DSCcert.pem**) in the directory `cert-data`. See the cert-data README for more information.  
+You need to provide a private key(**DSC01privkey.key**) and cert(**DSCcert.pem**) in the directory `cert-data`.  
 
 You also need to add the 3 digit country code(alpha-3-code) in docker-compose.yml in the **ddcc** service, e.g. **ARG** for Argentina
 
@@ -46,7 +48,7 @@ COUNTRY_CODE: 'ARG'
 
 * Check whether the HAPI FHIR server is running in `http://localhost:8080` 
 
-* Check whether the Snowstorm and Snowstorm browser server is running in `http://localhost:8082` Also check if the IPS terms were correctly uploaded.
+* Check whether the Snowstorm and Snowstorm browser server is running in `http://localhost:8082` Also check if the terms were correctly uploaded.
 
 * Test creating an IPS resource directly using the bundle endpoint. For example use this command
 
@@ -60,7 +62,7 @@ COUNTRY_CODE: 'ARG'
 
 In all cases, replace `localhost` with your server IP if needed.
 
-### IPS Transactions
+### MHD Transactions
 
 This repository includes the IPS mediator service which is a FHIR interceptor or API Gateway that transforms the incoming request to implement MHD Transactions. 
 
@@ -116,30 +118,86 @@ Example command:
 
 ### Transformations
 
-The IPS mediator includes a FHIR operation called `$ddcc` which transforms IPS Bundles to DDCC documents. It is mandatory for this operation to work that the stored IPS have at least one `Immunization` resource.
+The IPS mediator includes a FHIR operation called `$dvc` which transforms IPS Bundles to DVC documents. It is mandatory for this operation to work that the stored IPS have at least one `Immunization` resource compliant with the DVC standard.
 
 This is an example to use the transformation oepration:
 
-    curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$ddcc'
+    curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$dvc'
 
-Where `fb06a834-6b55-4ac3-a856-82489eb4d69d` is the id of the IPS Bundle. This endpoint returns the DDCC Bundle associated to the requested IPS.
+Where `fb06a834-6b55-4ac3-a856-82489eb4d69d` is the id of the IPS Bundle. This endpoint returns the DVC Bundle associated to the requested IPS.
 
-This transformation retrieves a previously stored IPS and checks whether the `Immunization` resource is present. The process extracts the information from the IPS to build the QuestionnaryResponse with the DDCC structure. This QuestionnarieResponse is sent to the DDCC module to generate the document.
+This transformation retrieves a previously stored IPS and checks whether the `Immunization` resource is present. The process extracts the information from the IPS to build the QuestionnaryResponse with the DVC structure. This QuestionnarieResponse is sent to the DVC module to generate the document.
 
 Optionally, if the IPS has more than one `Immunization` resource, you can pass the query argument `immunizationId` to specify the id of the `Immunization` resource tto transform. For example:
 
-    curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$ddcc?immunizationId=6fef12e7-64ad-4792-b2ad-5d6b699588fc'
+    curl -i --request GET 'http://localhost:3000/fhir/Bundle/fb06a834-6b55-4ac3-a856-82489eb4d69d/$dvc?immunizationId=6fef12e7-64ad-4792-b2ad-5d6b699588fc'
 
-### LACCHAIN SETUP, ONBOARD HELPER ###
+## Terminology Server
 
-In the folder `lacchain-setup-helper` you will find a shell script called `client-helper.sh` which will help you setup the lacpass-lacchain component before using it. You just need to run the script once. To find a fully detailed instructions please check the following documentation:
+An instance of `elasticsearch`, `snowstorm` and `snowstorm-browser` are provided within the docker compose services. Also an initialization script `init_snowstorm.sh` is executed the first time those services are deployed. By default this scripts loads the terms for spanish corpus into the server.
 
-* [Setup English Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/README.md)
-* [Setup Spanish Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/LEEME.md)
+The Snowstorm instance is pre-loaded with the latest version of the Latin-America Spanish Edition.
 
-### LACCHAIN SENDING HEALTH CERTIFICATES TO PATIENT WALLETS ###
+Check access to the browser by navigating to `http://localhost:8082`
 
-Once you have completed the previous section **LACCHAIN SETUP, ONBOARD HELPER** you will be ready to Send Health Certificates to your Patients Wallets; for that please take a look at the following instructions:
+### Converting local terminologies to FHIR (Connectathon 2024)
 
-* [Send health certificates - English Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/README.md#sending-health-certificates-wrapped-as-verifiable-credentials)
-* [Send health certificates - Spanish Documentation](https://github.com/lacchain/LACPass-LACChain-Component/blob/main/LEEME.md#enviando-certificados-de-salud-contenidos-en-credenciales-verificables)
+An [XLSX sepreadsheet](./fhir-terminology/Subsets_Conectathon_Template.xlsx) is provided as a template to facilitate the creation of the necessary terminology artifacts for the connectathon. The spreadsheet provides a mechanism to load local terminologies and mas to SNOMED CT, ICD-10 or ICD-11, as required.
+
+For this exercise, connectathon participants should edit the spreadheet, entering values for any local codes used on their system that matches the refence list of the RACSEL connectathon. This spreadsheet will be converted in FHIR resources using a [custom conversion script](./fhir-terminology/racsel-convert-xlsx-to-fhir.py) provided in this project. All the necessary files are available in the [Terminoloy folder](./fhir-terminology/). All the edits should be performed on the [template spreassheet](./fhir-terminology/Subsets_Conectathon_Template.xlsx), the test data files are only provided for validation purposes.
+
+To run transformation script you need to have [Python installed in your computer](https://www.python.org/downloads/). To execute the conversion use this command (the Python executable can be named python3, python or py depending on your setup):
+
+    python3 racsel-convert-xlsx-to-fhir.py Subsets_Conectathon_Test_Data.xlsx
+
+There is an option parameter to split the local code system by domain (Diagnosis, medication, etc), this is required if the local codes can overlap between different domains, i.e. if a diagonosisc an have the same local code as a medication. To use this split conversion you can run:
+
+    python3 racsel-convert-xlsx-to-fhir.py Subsets_Conectathon_Test_Data.xlsx -splitcs
+
+Users should complete all the necessary fields in the template, and then run the Python script. The result of the script run will be a FHIR Package that incldes all necessary resources:
+- CodeSystems
+    - RACSEL: a code system with all codes in RACSEL common terms
+    - ICD-10 fragment: only the codes used in the connectathon
+    - ICD-11 fragment: only the codes used in the connectathon
+    - Local Code System: the local codes provided by the user
+- ValueSet
+    - SNOMED Value Sets: one per section plus a general value set
+    - ICD-10: all codes
+    - ICD-11: all codes
+    - RACSEL: one per section plus a general value set
+    - Local Codes: one per section plus a general value set
+- ConceptMaps
+    - Local to SNOMED
+    - Local to FHIR
+    - Local to ICD-10
+    - Local to ICD-11
+    - ICD-11 to SNOMED
+    - ICD-10 to SNOMED (Custom reverse map)
+    - SNOMED to ICD-10 (Official map, already included in the SNOMED release)
+
+### Loading FHIR Resources in the terminology server
+
+The previous step generates a FHIR package, the current version of Snowstorm supports loading FHIR resources in the FHIR Package using the "load-package" endpoint.
+
+Example of uploading the package from the command line:
+
+    curl --form file=@racsel_fhir_package.tgz --form resourceUrls="*" http://localhost:8080/fhir-admin/load-package
+
+## Verifiable Health Links
+
+This docker compose contains an image of the Verifiable Health Link (VHL) service for the generation and issuance of VHLs. The Docker Compose file includes a pre-built, improved image of the service for easy deployment. However, you may review the implementation in the official repository for this project: https://github.com/gdhcnentomo/entomo-gdhcn-validator.
+
+To run this service correctly, you MUST be onboarded into the DEV environment of the GDHCN trust network https://github.com/WorldHealthOrganization/tng-cdn-dev. You will need to place these three certificates inside the `cert-data` folder:
+
+- The TLS certificates: `TLS.pem` (public key) and `TLS.key` (private key) for authenticating to the trust network.
+- The Document Signer Certificate private key: `DSCpriv.key` to sign the VHL.
+
+After that, you should modify the following environment variables in the docker-compose.yml file:
+
+- `TNG_COUNTRY`: The 2-letter country code.
+- `TNG_DSC_PRIVATEKEY_KID`: The Key Identifier (KID) for the Document Signer Certificate (DSC).
+- `GDHCN_BASEURL`: The base URL for the VHL service. It should be publicly accessible for verification.
+
+Once all these configurations are done, the service should start. By default, this service runs on port 8182 and deploys a web API to issue and verify VHLs.
+
+Swagger documentation is provided within the service. Please navigate to http://localhost:8182/swagger-ui/index.html to view the endpoints and their documentation.

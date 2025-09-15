@@ -49,45 +49,47 @@ services:
 
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
     container_name: elasticsearch
     environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
       - node.name=snowstorm
       - cluster.name=snowstorm-cluster
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
-      - discovery.type=single-node
+      - repositories.url.allowed_urls=["https://storage.googleapis.com/snowstorm-preload/"]
+      - action.destructive_requires_name=false
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
     volumes:
-      - ./elastic:/var/lib/elasticsearch/data
+      - snowstorm_preload:/usr/share/elasticsearch/data
     networks:
       elastic:
         aliases:
-          - es
+         - es
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://es:9200" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      test: ["CMD", "curl", "-f", "http://es:9200"]
+      interval: 1s
+      timeout: 1s
+      retries: 60
     ports:
       - 127.0.0.1:9200:9200
-    mem_reservation: 2g
+    mem_reservation: 4g
 
 
   snowstorm:
-    image: snomedinternational/snowstorm:latest
+    image: kaikewley/snowstorm:10.4.0-beta
     container_name: snowstorm
     restart: always
     depends_on:
       elasticsearch:
         condition: service_healthy
-    entrypoint: java -Xms2g -Xmx4g -jar snowstorm.jar --elasticsearch.urls=http://es:9200 --delete-indices --import=/snomed/SnomedCT_IPSTerminologyRelease.zip
+    entrypoint: java -Xms2g -Xmx4g --add-opens java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED -cp @/app/jib-classpath-file org.snomed.snowstorm.SnowstormApplication --elasticsearch.urls=http://es:9200
     networks:
       elastic:
         aliases:
-          - snowstorm
-    volumes:
-      - ./snomed:/snomed
+         - snowstorm
     ports:
-      - 8000:8080
+      - 8180:8080
+
 
   snowstorm-browser:
     image: snomedinternational/snomedct-browser:latest
@@ -104,52 +106,22 @@ services:
       - 8082:80
     restart: always
 
-  # openhim-mongo-db:
-  #   container_name: openhim-mongo-db
-  #   image: mongo:4.0
-  #   networks:
-  #     - openhim
-  #   volumes:
-  #     - "./mongo-data:/data/db"
-  #   restart: unless-stopped
+  init-script-snowstorm:
+    image: appropriate/curl
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - .snowstorm-init-status:/status
+      - ./init_snowstorm.sh:/usr/local/bin/init_snowstorm.sh
+    entrypoint: /bin/sh -c 'sh /usr/local/bin/init_snowstorm.sh'
+    networks:
+      - elastic
 
-  # openhim-core:
-  #   container_name: openhim-core
-  #   image: jembi/openhim-core:v7.1.0
-  #   restart: unless-stopped
-  #   environment:
-  #     mongo_url: "mongodb://openhim-mongo-db/openhim-development"
-  #     mongo_atnaUrl: "mongodb://openhim-mongo-db/openhim-development"
-  #     NODE_ENV: "development"
-  #   ports:
-  #     - "8083:8080"
-  #     - "8084:5000"
-  #     - "8085:5001"
-  #   networks:
-  #     - openhim
-  #   healthcheck:
-  #     test: "curl -sSk https://openhim-core:8083/heartbeat || exit 1"
-  #     interval: 30s
-  #     timeout: 30s
-  #     retries: 3
-
-  # openhim-console:
-  #   container_name: openhim-console
-  #   image: jembi/openhim-console:v1.15.0
-  #   restart: unless-stopped
-  #   networks:
-  #     - openhim
-  #   ports:
-  #     - "8086:80"
-  #   healthcheck:
-  #     test: "curl -sS http://openhim-console || exit 1"
-  #     interval: 30s
-  #     timeout: 30s
-  #     retries: 3
 
   ddcc:
     container_name: ddcc-transactions-mediator
-    image: censcl/ops-ddcc-transactions-mediator-lacpass-ips:latest
+    image: censcl/ops-ddcc-transactions-mediator-lacpass-ips:v2.0
     environment:
       FHIR_SERVER: 'http://hapi-fhir:8080/fhir/'
       MATCHBOX_SERVER: 'http://resource-generation-service:8080/fhir/'
@@ -165,7 +137,7 @@ services:
 
   resource-generation-service:
     container_name: resource-generation-service
-    image: censcl/ops-ddcc-resource-generation-service:v1.0
+    image: censcl/ops-ddcc-resource-generation-service:v2.0
     ports:
         - "8023:8080"
 
@@ -195,5 +167,57 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=adminips
       - POSTGRES_DB=ips
+  
+  gdhcn-validator-service:
+    container_name: gdhcn-validator-service
+    image: createchile/gdhcn-validator_backend:latest
+    ports:
+      - 8182:8080
+    secrets:
+      - tls-pem
+      - tls-key
+      - dsc-private
+    environment:
+      - POSTGRES_DB=gdhcn-validator
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://gdhcn-db:5432/gdhcn-validator
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+      - TNG_TLS_PEM=/run/secrets/tls-pem
+      - TNG_TLS_KEY=/run/secrets/tls-key
+      - TNG_DSC_PRIVATEKEY=/run/secrets/dsc-private
+      - TNG_COUNTRY=XL
+      - TNG_DSC_PRIVATEKEY_KID=UUuJcwmjoJM=
+      - GDHCN_BASEURL=http://lacpass.create.cl:8182
+    networks:
+      - spring-postgres
+    volumes:
+      - ./json:/json
+
+  gdhcn-db:
+    image: postgres
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - spring-postgres
+    environment:
+      - POSTGRES_DB=gdhcn-validator
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+
 networks:
   elastic:
+  spring-postgres:
+
+volumes:
+  snowstorm_preload:
+  db-data:
+
+secrets:
+  dsc-private:
+    file: cert-data/DSCpriv.key
+  tls-key:
+    file: cert-data/TLS.key
+  tls-pem:
+    file: cert-data/TLS.pem
