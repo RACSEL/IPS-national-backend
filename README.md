@@ -35,12 +35,28 @@ If you need to change any of the default value, you can edit `docker-compose.yml
 
 In particular you should change the variable `EXTERNAL_HAPI_FHIR` to the actual public URL to the FHIR server.
 
-You need to provide a private key(**DSC01privkey.key**) and cert(**DSCcert.pem**) in the directory `cert-data`.  
+You need to provide this:
 
-You also need to add the 3 digit country code(alpha-3-code) in docker-compose.yml in the **ddcc** service, e.g. **ARG** for Argentina
+* **DSC.key**
+* **DSC.pem**
+* **TLS.key**
+* **TLS.pem** 
+
+To the directory `cert-data`.  
+
+You also need to create a **.env** file with these configuration(adjunt these values depending of your information)
 
 ```
-COUNTRY_CODE: 'ARG'
+TNG_COUNTRY=XK
+TNG_COUNTRY_3=XXK
+TNG_DSC_PRIVATEKEY_KID="UsQyhCf8Lyc="
+POSTGRES_USER=root
+POSTGRES_PASSWORD=hapifhir2023
+DDCC_PORT=4321
+HAPIFHIR_PORT=8080
+PROD_HAPI_FHIR=http://hapi-fhir:8080
+EXTERNAL_HAPI_FHIR=http://mi_dominio:8080/fhir
+HAPI_FHIR_BUNDLE_SIGNER_PORT=3000
 ```
 
 ### Testing

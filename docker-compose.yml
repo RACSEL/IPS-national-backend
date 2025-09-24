@@ -7,12 +7,12 @@ services:
     volumes:
       - ./hapi-config:/data/hapi
     ports:
-      - "8080:8080"
+      - "${HAPIFHIR_PORT:-8080}:8080"
     environment:
       SPRING_CONFIG_LOCATION: 'file:///data/hapi/application.yaml'
-      SPRING_DATASOURCE_URL: 'jdbc:postgresql://hapi-db:5433/root'
-      SPRING_DATASOURCE_USERNAME: 'root'
-      SPRING_DATASOURCE_PASSWORD: 'hapifhir2023'
+      SPRING_DATASOURCE_URL: 'jdbc:postgresql://hapi-db:5433/${POSTGRES_DB:-root}'
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-hapifhir2023}
       SPRING_DATASOURCE_DRIVERCLASSNAME: 'org.postgresql.Driver'
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: 'ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgres94Dialect'
 
@@ -21,9 +21,9 @@ services:
     restart: always
     user: root
     environment:
-      POSTGRES_DB: "root"
-      POSTGRES_USER: "root"
-      POSTGRES_PASSWORD: "hapifhir2023"
+      POSTGRES_DB: ${POSTGRES_DB:-root}
+      POSTGRES_USER: ${POSTGRES_USER:-root}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hapifhir2023}
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -37,12 +37,12 @@ services:
     build:
       context: ./bundle-signer
     ports:
-      - "3000:3000"
+      - "${HAPI_FHIR_BUNDLE_SIGNER_PORT:-3000}:3000"
     environment:
       NODE_ENV: "production"
-      PROD_HAPI_FHIR: "http://lacpass.create.cl:8080"
+      PROD_HAPI_FHIR: ${PROD_HAPI_FHIR:-http://hapi-fhir:8080}
       DDCC_URL: "http://ddcc:4321/"
-      EXTERNAL_HAPI_FHIR: "http://lacpass.create.cl:8080/fhir"
+      EXTERNAL_HAPI_FHIR: ${EXTERNAL_HAPI_FHIR:-http://lacpass.create.cl:8080/fhir}
       PROD_PRIVATE_KEY_FILE: "./static/key.pem"
     volumes:
       - ./bundle-signer/static:/usr/src/app/static
@@ -122,16 +122,17 @@ services:
   ddcc:
     container_name: ddcc-transactions-mediator
     image: censcl/ops-ddcc-transactions-mediator-lacpass-ips:v3.0
+    secrets:
+      - dsc-pem
+      - dsc-private
     environment:
-      FHIR_SERVER: 'http://hapi-fhir:8080/fhir/'
+      FHIR_SERVER: ${PROD_HAPI_FHIR:-http://hapi-fhir:8080/fhir}
       MATCHBOX_SERVER: 'http://resource-generation-service:8080/fhir/'
-      PRIVATE_KEY_FILE: '/app/cert-data/DSC01privkey.key'
-      PUBLIC_KEY_FILE: '/app/cert-data/DSCcert.pem'
-      COUNTRY_CODE: 'XCL'
-    volumes:
-      - ./cert-data:/app/cert-data
+      PRIVATE_KEY_FILE: /run/secrets/dsc-private
+      PUBLIC_KEY_FILE: /run/secrets/dsc-pem
+      COUNTRY_CODE: ${TNG_COUNTRY_3:?err}
     ports:
-      - "4321:4321"
+      - "${DDCC_PORT:-4321}:4321"
     depends_on:
       - resource-generation-service
 
@@ -139,7 +140,7 @@ services:
     container_name: resource-generation-service
     image: censcl/ops-ddcc-resource-generation-service:v3.0
     ports:
-        - "8023:8080"
+        - "8080"
   
   gdhcn-validator-service:
     container_name: gdhcn-validator-service
@@ -159,8 +160,8 @@ services:
       - TNG_TLS_PEM=/run/secrets/tls-pem
       - TNG_TLS_KEY=/run/secrets/tls-key
       - TNG_DSC_PRIVATEKEY=/run/secrets/dsc-private
-      - TNG_COUNTRY=XJ
-      - TNG_DSC_PRIVATEKEY_KID=I1BAX8FATLs=
+      - TNG_COUNTRY=${TNG_COUNTRY:?err}
+      - TNG_DSC_PRIVATEKEY_KID=${TNG_DSC_PRIVATEKEY_KID:?err}
       - GDHCN_BASEURL=http://lacpass.create.cl:8182
     networks:
       - spring-postgres
@@ -189,7 +190,9 @@ volumes:
 
 secrets:
   dsc-private:
-    file: cert-data/DSCpriv.key
+    file: cert-data/DSC.key
+  dsc-pem:
+    file: cert-data/DSC.pem
   tls-key:
     file: cert-data/TLS.key
   tls-pem:
