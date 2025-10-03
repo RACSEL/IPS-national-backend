@@ -209,7 +209,7 @@ function addItem(qr, name, value, itemName) {
 
 }
 
-function buildICVPQR(patient, immunization) {
+function buildICVPQR(patient, immunization, composition, performer) {
     let qr = createQRICVP();
     //items obligatorios
     qr = addAnswer(qr, "name", patient["name"][0]["text"] || (patient["name"][0]["given"].join(" ") + " " + patient["name"][0]["family"]));
@@ -226,9 +226,11 @@ function buildICVPQR(patient, immunization) {
 
     //opcionales
     qr = addAnswer(qr, "sex", patient["gender"] || null);
-    let ext = patient["extension"] ? patient["extension"].find(e => e["url"].indexOf("/StructureDefinition/patient-nationality") >= 0) : null;
-    if (ext && ext["valueCodeableConcept"] && ext["valueCodeableConcept"]["coding"] && ext["valueCodeableConcept"]["coding"]["code"]) {
-        qr = addAnswer(qr, "nationality", ext["valueCodeableConcept"]["coding"]["code"]);
+    let ext = patient["extension"] ? patient["extension"].find(e => e["url"].indexOf("/StructureDefinition/patient-citizenship") >= 0) : null;
+    let extCode = ext["extension"] ? ext["extension"].find(e => e["url"].indexOf("code") >= 0) : null;
+    if (extCode && extCode["valueCodeableConcept"] && extCode["valueCodeableConcept"]["coding"]
+         && extCode["valueCodeableConcept"]["coding"].length > 0 && extCode["valueCodeableConcept"]["coding"][0]["code"]) {
+        qr = addAnswer(qr, "nationality", extCode["valueCodeableConcept"]["coding"][0]["code"]);
     } else {
         qr = addAnswer(qr, "nationality", null);
     }
@@ -237,14 +239,14 @@ function buildICVPQR(patient, immunization) {
     )?.["value"] || patient["identifier"][0]["value"];
     qr = addAnswer(qr, "nid", taxIdentifier);
 
-    const guardianGiven = patient["contact"]?.[0]?.["name"]?.[0]?.["given"]?.join(" ") || "";
-    const guardianFamily = patient["contact"]?.[0]?.["name"]?.[0]?.["family"] || "";
+    const guardianGiven = patient["contact"]?.[0]?.["name"]?.["given"]?.join(" ") || "";
+    const guardianFamily = patient["contact"]?.[0]?.["name"]?.["family"] || "";
     const guardianName = (guardianGiven + " " + guardianFamily).trim() || null;
     qr = addItem(qr, "guardian", guardianName, "guardianName");
-    qr = addItem(qr, "guardian", patient["contact"]?.[0]?.["relationship"]?.["coding"]?.[0]?.["code"] || null, "guardianRelationship");
+    qr = addItem(qr, "guardian", patient["contact"]?.[0]?.["relationship"]?.[0]?.["coding"]?.[0]?.["code"] || null, "guardianRelationship");
 
-    qr = addItem(qr, "vaccineDetails", immunization["performer"]?.["reference"] || null, "clinicianName");
-    qr = addItem(qr, "vaccineDetails", immunization["manufacturer"]?.["reference"] || null, "issuer");
+    qr = addItem(qr, "vaccineDetails", performer["name"]?.[0]?.['text'] || null, "clinicianName");
+    qr = addItem(qr, "vaccineDetails", composition["author"]?.[0]?.["display"] || null, "issuer");
 
     let vaccineDetailsId = qr.item.findIndex(e => e["linkId"] == "vaccineDetails");
     qr.item[vaccineDetailsId] = addItem(qr.item[vaccineDetailsId], "validityPeriod", immunization["occurrenceDateTime"]?.split("T")[0] || null, "startDate");
