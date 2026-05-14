@@ -75,3 +75,7 @@ venv.bak/
 
 # pyenv
 .python-version
+postgres-data-app/
+snomed/elastic
+mongo-data
+.snowstorm-init-status/

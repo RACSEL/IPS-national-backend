@@ -13,6 +13,7 @@ import sys
 cie10_uri = "http://hl7.org/fhir/sid/icd-10"
 cie11_uri = "http://id.who.int/icd/release/11/mms"
 snomed_uri = "http://snomed.info/sct"
+prequal_uri = "http://smart.who.int/pcmt-vaxprequal/CodeSystem/PreQualProductIDs"
 
 temp_dir = tempfile.gettempdir()
 
@@ -136,7 +137,7 @@ def convert_to_fhir(file_path):
     alergias_df = pd.read_excel(file_path, sheet_name='Alergias')
     medicacion_df = pd.read_excel(file_path, sheet_name='Medicación ')
     procedimientos_df = pd.read_excel(file_path, sheet_name='Procedimientos')
-
+    
     # set the local uri to default or colmuns(2_ in antecedentes_df if it exists
     local_uri = antecedentes_df.columns[2] if antecedentes_df.columns[2] else "http://node-x.org/terminology/default"
 
@@ -162,6 +163,8 @@ def convert_to_fhir(file_path):
     procedimientos_concepts = extract_codes(procedimientos_df, 7, 8)
     procedimientos_racsel = extract_codes(procedimientos_df, 1, 2)
     procedimientos_local = extract_codes(procedimientos_df, 3, 4)
+    #prequal
+    vacunas_prequal_concepts = extract_codes(vacunas_df, 9, 10)
 
     # Forward maps
     antecedentes_local_to_racsel = extract_maps(antecedentes_df, 3, 4, 1, 2)
@@ -182,6 +185,11 @@ def convert_to_fhir(file_path):
     antecedentes_cie10_to_snomed = extract_maps(antecedentes_df, 5, 6, 7, 8)
     diagnosticos_cie10_to_snomed = extract_maps(diagnosticos_df, 5, 6, 7, 8)
     vacunas_cie11_to_snomed = extract_maps(vacunas_df, 5, 6, 7, 8)
+    #prequal
+    vacunas_local_to_prequal = extract_maps(vacunas_df, 3, 4, 9, 10)
+    vacunas_cie11_to_prequal = extract_maps(vacunas_df, 5, 6, 9, 10)
+    vacunas_snomed_to_prequal = extract_maps(vacunas_df, 7, 8, 9, 10)
+
 
     # Reverse maps
     antecedentes_racsel_to_local = extract_maps(antecedentes_df, 1, 2, 3, 4)
@@ -203,6 +211,11 @@ def convert_to_fhir(file_path):
     diagnosticos_snomed_to_cie10 = extract_maps(diagnosticos_df, 7, 8, 5, 6)
     vacunas_snomed_to_cie11 = extract_maps(vacunas_df, 7, 8, 5, 6)
 
+    #prequal
+    vacunas_prequal_to_local = extract_maps(vacunas_df, 9, 10, 3, 4)
+    vacunas_prequal_to_cie11 = extract_maps(vacunas_df, 9, 10, 5, 6)
+    vacunas_prequal_to_snomed = extract_maps(vacunas_df, 9, 10, 7, 8)
+
     local_to_racsel = antecedentes_local_to_racsel + diagnosticos_local_to_racsel + vacunas_local_to_racsel + alergias_local_to_racsel + medicacion_local_to_racsel + procedimientos_local_to_racsel
     local_to_snomed = antecedentes_local_to_snomed + diagnosticos_local_to_snomed + vacunas_local_to_snomed + alergias_local_to_snomed + medicacion_local_to_snomed + procedimientos_local_to_snomed
     local_to_cie10 = antecedentes_local_to_cie10 + diagnosticos_local_to_cie10
@@ -216,7 +229,6 @@ def convert_to_fhir(file_path):
     snomed_to_cie10 = antecedentes_snomed_to_cie10 + diagnosticos_snomed_to_cie10
     snomed_to_cie11 = vacunas_snomed_to_cie11
     
-
     racselConnectathonUri = "http://racsel.org/connectathon"
 
     # Create ValueSet JSONs
@@ -243,7 +255,9 @@ def convert_to_fhir(file_path):
     cie11_value_set_json = create_value_set_json("CIE11ValueSet", "cie11-vs", vacunas_cie11, cie11_uri)
     local_value_set_json = create_value_set_json("LocalValueSet", "local-vs", antecedentes_local + diagnosticos_local + vacunas_local + alergias_local + medicacion_local + procedimientos_local, local_uri)
     snomed_value_set_json = create_value_set_json("SNOMEDValueSet", "snomed-vs", antecedentes_concepts + diagnosticos_concepts + vacunas_concepts + alergias_concepts + medicacion_concepts + procedimientos_concepts, snomed_uri)  
-
+    #prequal
+    vacunas_prequal_value_set_json = create_value_set_json("PreQualValueSet", "prequal-vs", vacunas_prequal_concepts, prequal_uri)
+    
     # Create CodeSystem JSONs - Unified approach
     conceptes_local_dfs = [antecedentes_local, diagnosticos_local, vacunas_local, alergias_local, medicacion_local, procedimientos_local]
     code_system_local_json = create_code_system_fragment(conceptes_local_dfs, local_uri, "LocalCodeSystem")
@@ -254,6 +268,10 @@ def convert_to_fhir(file_path):
     code_system_cie10_json = create_code_system_fragment(concepts_cie10_dfs, cie10_uri, "icd-10")
     concepts_cie11_dfs = [vacunas_cie11]
     code_system_cie11_json = create_code_system_fragment(concepts_cie11_dfs, cie11_uri, "icd-11")
+    
+    #prequal
+    concepts_prequal_dfs = [vacunas_prequal_concepts]
+    code_system_prequal_json = create_code_system_fragment(concepts_prequal_dfs, prequal_uri, "prequal")
 
     # Create CodeSystem-based ConceptMaps - Unified approach
     local_to_racsel_map_json = create_concept_map(local_to_racsel, local_uri, racselConnectathonUri, "Local to RACSEL")
@@ -269,6 +287,14 @@ def convert_to_fhir(file_path):
     cie11_to_snomed_map_json = create_concept_map(cie11_to_snomed, cie11_uri, snomed_uri, "CIE11 to SNOMED")
     snomed_to_cie10_map_json = create_concept_map(snomed_to_cie10, snomed_uri, cie10_uri, "SNOMED to CIE10")
     snomed_to_cie11_map_json = create_concept_map(snomed_to_cie11, snomed_uri, cie11_uri, "SNOMED to CIE11")
+
+    #prequal
+    vacunas_local_to_prequal_map_json = create_concept_map(vacunas_local_to_prequal, local_uri, prequal_uri, "Local to PreQual")
+    vacunas_cie11_to_prequal_map_json = create_concept_map(vacunas_cie11_to_prequal, cie11_uri, prequal_uri, "CIE11 to PreQual")
+    vacunas_snomed_to_prequal_map_json = create_concept_map(vacunas_snomed_to_prequal, snomed_uri, prequal_uri, "SNOMED to PreQual")
+    vacunas_prequal_to_local_map_json = create_concept_map(vacunas_prequal_to_local, prequal_uri, local_uri, "PreQual to Local")
+    vacunas_prequal_to_cie11_map_json = create_concept_map(vacunas_prequal_to_cie11, prequal_uri, cie11_uri, "Prequal to CIE11")
+    vacunas_prequal_to_snomed_map_json = create_concept_map(vacunas_prequal_to_snomed, prequal_uri, snomed_uri, "PreQual to SNOMED")
 
     # Create ValueSet-based ConceptMaps
     
@@ -459,6 +485,69 @@ def convert_to_fhir(file_path):
         "VS Vacunas SNOMED to RACSEL"
     )
 
+
+    #prequal
+    vs_vacunas_local_to_prequal_map = create_valueset_concept_map(
+        vacunas_local_to_prequal,
+        vacunas_local_value_set_json["url"],
+        vacunas_prequal_value_set_json["url"],
+        local_uri,
+        prequal_uri,
+        "VS Vacunas Local to PreQual"
+    )
+
+    vs_vacunas_cie11_to_prequal_map = create_valueset_concept_map(
+        vacunas_cie11_to_prequal,
+        cie11_value_set_json["url"],
+        vacunas_prequal_value_set_json["url"],
+        local_uri,
+        prequal_uri,
+        "VS Vacunas CIE11 to PreQual"
+    )
+
+    vs_vacunas_snomed_to_prequal_map = create_valueset_concept_map(
+        vacunas_snomed_to_prequal,
+        snomed_value_set_json["url"],
+        vacunas_prequal_value_set_json["url"],
+        local_uri,
+        snomed_uri,
+        "VS Vacunas SNOMED to PreQual"
+    )
+    
+    #prequal
+    vs_vacunas_prequal_to_local_map = create_valueset_concept_map(
+        vacunas_prequal_to_local,
+        vacunas_prequal_value_set_json["url"],
+        vacunas_local_value_set_json["url"],
+        prequal_uri,
+        local_uri,
+        "VS Vacunas PreQual to Local"
+    )
+
+
+    vs_vacunas_prequal_to_cie11_map =  create_valueset_concept_map(
+        vacunas_prequal_to_cie11,
+        vacunas_prequal_value_set_json["url"],
+        cie11_value_set_json["url"],
+        prequal_uri,
+        cie11_uri,
+        "VS Vacunas PreQual to CIE11"
+    )
+
+    vs_vacunas_prequal_to_snomed_map =  create_valueset_concept_map(
+        vacunas_prequal_to_snomed,
+        vacunas_prequal_value_set_json["url"],
+        snomed_value_set_json["url"],
+        prequal_uri,
+        snomed_uri,
+        "VS Vacunas PreQual to SNOMED"
+    )
+
+
+
+
+
+
     # Domain-specific ValueSet to ValueSet mappings - Alergias
     vs_alergias_local_to_racsel_map = create_valueset_concept_map(
         alergias_local_to_racsel,
@@ -492,6 +581,7 @@ def convert_to_fhir(file_path):
         local_uri,
         "VS Alergias SNOMED to Local"
     )
+    
     # RACSEL to SNOMED mappings for Alergias
     vs_alergias_racsel_to_snomed_map = create_valueset_concept_map(
         [(r[0], r[1], s[2], s[3]) for r in alergias_racsel_to_local for s in alergias_local_to_snomed if r[2] == s[0]],
@@ -501,6 +591,7 @@ def convert_to_fhir(file_path):
         snomed_uri,
         "VS Alergias RACSEL to SNOMED"
     )
+
     vs_alergias_snomed_to_racsel_map = create_valueset_concept_map(
         [(s[0], s[1], r[2], r[3]) for s in alergias_snomed_to_local for r in alergias_local_to_racsel if s[2] == r[0]],
         alergias_value_set_json["url"],
@@ -775,6 +866,19 @@ def convert_to_fhir(file_path):
         (vs_vacunas_cie11_to_local_map, "package/ConceptMap/VS-Vacunas-CIE11-to-Local.json"),
         (vs_vacunas_racsel_to_snomed_map, "package/ConceptMap/VS-Vacunas-RACSEL-to-SNOMED.json"),
         (vs_vacunas_snomed_to_racsel_map, "package/ConceptMap/VS-Vacunas-SNOMED-to-RACSEL.json"),
+
+        #prequal
+        (code_system_prequal_json, "package/CodeSystem/PreQualCodeSystem.json"),
+        #prequal vs 
+        (vacunas_prequal_value_set_json, "package/ValueSet/VacunasPreQualValueSet.json"),
+        #prequal maps based on valueset
+        (vs_vacunas_local_to_prequal_map, "package/ConceptMap/VS-Vacunas-Local-to-Prequal.json"),
+        (vs_vacunas_cie11_to_prequal_map, "package/ConceptMap/VS-Vacunas-CIE11-to-Prequal.json"),
+        (vs_vacunas_snomed_to_prequal_map, "package/ConceptMap/VS-Vacunas-SNOMED-to-Prequal.json"),
+        (vs_vacunas_prequal_to_local_map, "package/ConceptMap/VS-Vacunas-Prequal-to-Local.json"),
+        (vs_vacunas_prequal_to_cie11_map, "package/ConceptMap/VS-Vacunas-PreQual-to-CIE11.json"),
+        (vs_vacunas_prequal_to_snomed_map, "package/ConceptMap/VS-Vacunas-PreQual-to-SNOMED.json"),
+
         # ValueSet-based ConceptMaps - Domain-specific Alergias
         (vs_alergias_local_to_racsel_map, "package/ConceptMap/VS-Alergias-Local-to-RACSEL.json"),
         (vs_alergias_racsel_to_local_map, "package/ConceptMap/VS-Alergias-RACSEL-to-Local.json"),
