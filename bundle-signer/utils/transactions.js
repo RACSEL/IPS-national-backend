@@ -26,7 +26,7 @@ const postPDBEntry = (resourceType, tempId) => {
 const createDocumentReference = (bundleIPS, docRefId, docId, FHIR_URL) => {
     let entry = postPDBEntry("DocumentReference", docRefId)
     entry.resource.meta = {
-        profile: ["https://profiles.ihe.net/ITI/MHD/StructureDefinition/IHE.MHD.Minimal.DocumentReference"]
+        profile: ["http://hl7.org/fhir/uv/ips/StructureDefinition/Bundle-uv-ips"]
     }
     entry.resource.status = "current"
     let identifier = {
