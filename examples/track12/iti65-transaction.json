@@ -1,0 +1,188 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:5ca8da35-efb1-498a-93bc-ed34524a360f",
+      "resource": {
+        "resourceType": "Patient",
+        "identifier": [
+          {
+            "system": "urn:oid:2.16.858.1.858.1.1.1",
+            "value": "123456789"
+          }
+        ],
+        "active": true,
+        "name": [
+          {
+            "use": "official",
+            "family": "Pérez",
+            "given": [
+              "Juan"
+            ]
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Patient"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:15f62e6b-f4d9-43d8-91f5-ee963a34339c",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "docStatus": "final",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "57133-1",
+              "display": "Referral note"
+            }
+          ],
+          "text": "Informe de Contra-referencia Dermatológica"
+        },
+        "subject": {
+          "reference": "urn:uuid:5ca8da35-efb1-498a-93bc-ed34524a360f"
+        },
+        "date": "2026-04-23T07:50:00-03:00",
+        "author": [
+          {
+            "display": "Dra. Especialista - Nodo Panamá"
+          }
+        ],
+        "description": "Respuesta a interconsulta - Caso Dermatología",
+        "content": [
+          {
+            "attachment": {
+              "contentType": "application/fhir+json",
+              "url": "urn:uuid:03e4a890-b152-481a-9ca5-685e03550a08"
+            }
+          }
+        ],
+        "context": {
+          "related": [
+            {
+              "identifier": {
+                "system": "https://salud.gub.uy/interconsultas",
+                "value": "UY-PA-2026-998877"
+              }
+            }
+          ]
+        }
+      },
+      "request": {
+        "method": "POST",
+        "url": "DocumentReference"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:03e4a890-b152-481a-9ca5-685e03550a08",
+      "resource": {
+        "resourceType": "Bundle",
+        "type": "document",
+        "timestamp": "2026-04-23T07:50:00-03:00",
+        "entry": [
+          {
+            "fullUrl": "urn:uuid:4d58cb4f-1f8b-4f94-9877-bb5a0de47955",
+            "resource": {
+              "resourceType": "Composition",
+              "status": "final",
+              "type": {
+                "coding": [
+                  {
+                    "system": "http://loinc.org",
+                    "code": "11488-4",
+                    "display": "Consultation note"
+                  }
+                ]
+              },
+              "subject": {
+                "reference": "urn:uuid:5ca8da35-efb1-498a-93bc-ed34524a360f"
+              },
+              "date": "2026-04-23T07:50:00-03:00",
+              "author": [
+                {
+                  "display": "Dra. Especialista - Nodo Panamá"
+                }
+              ],
+              "title": "Informe de Contra-referencia Dermatológica",
+              "section": [
+                {
+                  "title": "Motivo de Interconsulta",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://loinc.org",
+                        "code": "42349-1",
+                        "display": "Reason for referral"
+                      }
+                    ]
+                  },
+                  "text": {
+                    "status": "generated",
+                    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Se solicita segunda opinión para evaluación de lesión pigmentada en región escapular, con el fin de descartar malignidad tras hallazgos clínicos iniciales en Uruguay.</p></div>"
+                  }
+                },
+                {
+                  "title": "Revisión de Evidencia",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://loinc.org",
+                        "code": "30954-2",
+                        "display": "Relevant diagnostic tests"
+                      }
+                    ]
+                  },
+                  "text": {
+                    "status": "generated",
+                    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Se re-evaluaron los resultados del IPS (Bundle/2313), específicamente el DiagnosticReport/biopsia-001 y las imágenes dermatoscópicas adjuntas.</p></div>"
+                  }
+                },
+                {
+                  "title": "Juicio Clínico",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://loinc.org",
+                        "code": "51848-0",
+                        "display": "Assessment note"
+                      }
+                    ]
+                  },
+                  "text": {
+                    "status": "generated",
+                    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Tras el análisis de la evidencia, se concluye que la morfología de la lesión es compatible con un Nevus Displásico. No se identifican criterios histológicos de melanoma.</p></div>"
+                  }
+                },
+                {
+                  "title": "Recomendaciones",
+                  "code": {
+                    "coding": [
+                      {
+                        "system": "http://loinc.org",
+                        "code": "18776-5",
+                        "display": "Plan of care"
+                      }
+                    ]
+                  },
+                  "text": {
+                    "status": "generated",
+                    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><ul><li>Control dermatoscópico cada 6 meses.</li><li>Uso de fotoprotección (FPS 50+).</li><li>No se requiere intervención quirúrgica inmediata.</li></ul></div>"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Bundle"
+      }
+    }
+  ]
+}

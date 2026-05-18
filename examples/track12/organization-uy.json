@@ -1,0 +1,14 @@
+{
+  "resourceType": "Organization",
+  "id": "hospital-uy",
+  "identifier": [
+    {
+      "system": "https://salud.gub.uy/organizaciones",
+      "value": "HOSP-UY-CLINICAS"
+    }
+  ],
+  "name": "Hospital de Clínicas - Uruguay",
+  "alias": [
+    "HIS Country A"
+  ]
+}

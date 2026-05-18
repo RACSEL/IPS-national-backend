@@ -1,0 +1,78 @@
+sequenceDiagram
+    autonumber
+    participant HA as HIS_País_A
+    participant TS as Terminológico A
+    participant NA as Nodo_País_A
+    participant MPI as MPI
+    participant AP as App_Paciente
+    participant VHLA as Servicio VHL A
+    participant W as Wallet
+    participant NB as Nodo_País_B
+    participant HB as HIS_País_B
+    participant TSB as Terminológico B
+    participant VHLB as Servicio VHL B
+    participant ITB as ITB
+    participant TN as GDHCN
+
+    Note over HA, MPI: Paso 0: Generar IPS
+    HA->>MPI: ITI-78 <G>
+    MPI->>HA: Retorna paciente
+
+    HA->>TS: ITI-98 / ITI-101 <G>
+    TS->>HA: Retorna terminologia
+
+    HA->>HA: Crea IPS_A
+    HA->>NA: ITI-65: Guarda IPS_A <G>
+    NA->>HA: ACK
+    
+    Note over NA, W: Paso 1: Origen (País A)
+    activate AP
+    AP->>NA: ITI-67: Solicita IPS_A <G>
+    NA->>AP: Devuelve referencia de documento
+
+    AP->>NA: ITI-68: Obtener IPS_A <G>
+    NA->>AP: Retorna IPS_A
+
+    AP->>AP: Seleccionar recursos
+
+    AP->>VHLA: Crear VHL
+    VHLA->>AP: VHL Generado
+
+    opt Opcional
+        AP-->>W: Enviar VHL (Deeplink)
+    end
+    deactivate AP
+
+    Note over AP, TN: Paso 2: Destino (País B)
+    Note over AP, HB: Paciente presenta QR (App o Wallet)
+    AP->>HB: Presenta QR VHL
+    opt Opcional
+        W-->>HB: Presenta QR VHL
+    end
+    HB->>TN: Valida Firma (GDHCN)
+    TN->>HB: Firma OK
+    HB->>VHLA: Obtener IPS_A desde VHL
+    VHLA->>HB: Retorna IPS_A con recursos seleccionados
+
+    HB->>ITB: Valida IPS_A
+    ITB->>HB: Validación OK
+
+    Note over NB, VHLB: Nueva atención (País B)
+    HB->>MPI: ITI-78 <G>
+    MPI->>HB: Retorna paciente
+    HB->>TSB: ITI-98 / ITI-101 <G>
+    TSB->>HB: Retorna terminologia
+    HB->>NB: ITI-65: Guarda nuevo IPS_B <G>
+    NB->>HB: ACK
+    HB->>VHLB: Crear VHL
+    VHLB->>HB: VHL Generado
+
+    AP->>HB: Escanear y Leer VHL
+    HB->>AP: Retorna IPS_B
+    AP->>AP: Merge de IPS_A y IPS_B
+    
+    Note over AP, HA: Paso 3: Retorno (País A)
+    AP->>AP: Genera VHL IPS_A+B
+    HA->>AP: Obtiene IPS_A+B desde VHL
+    AP->>HA: Retorna IPS_A+B
+    HA->>HA: Visualiza IPS_A+B

@@ -1,0 +1,64 @@
+{
+  "resourceType": "ServiceRequest",
+  "identifier": [
+    {
+      "system": "https://salud.gub.uy/interconsultas",
+      "value": "UY-PA-2026-998877"
+    }
+  ],
+  "status": "active",
+  "intent": "order",
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "103696004"
+        }
+      ],
+      "text": "Derivación a especialista"
+    }
+  ],
+  "code": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "308430006"
+      }
+    ],
+    "text": "Dermatología"
+  },
+  "subject": {
+    "identifier": {
+      "system": "urn:oid:2.16.858.1.858.1.1.1",
+      "value": "123456789"
+    },
+    "display": "Juan Pérez"
+  },
+  "requester": {
+    "reference": "Organization/hospital-uy",
+    "display": "Hospital de Clínicas"
+  },
+  "performer": [
+    {
+      "reference": "Organization/pais-panama",
+      "display": "República de Panamá"
+    }
+  ],
+  "reasonCode": [
+    {
+      "text": "Evaluación de lesión pigmentada en piel"
+    }
+  ],
+  "supportingInfo": [
+    {
+      "reference": "Bundle/123",
+      "display": "IPS - Resumen de Historia Clínica"
+    }
+  ],
+  "note": [
+    {
+      "text": "Se solicita evaluación de lesión pigmentada para descartar malignidad."
+    }
+  ]
+}
