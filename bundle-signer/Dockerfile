@@ -15,4 +15,4 @@ RUN npm install
 COPY . .
 
 EXPOSE 3000
-CMD [ "sh", "-c", "cp config/config.sample.js config/config.js && cd static && sh create_pem_files.sh && cd .. && npm start" ]
+CMD [ "sh", "-c", "cd static && sh create_pem_files.sh && cd .. && npm start" ]

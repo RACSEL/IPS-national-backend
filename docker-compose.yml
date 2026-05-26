@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   hapi-fhir:
     image: "hapiproject/hapi:latest"
@@ -9,12 +9,12 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_CONFIG_LOCATION: 'file:///data/hapi/application.yaml'
-      SPRING_DATASOURCE_URL: 'jdbc:postgresql://hapi-db:5433/root'
-      SPRING_DATASOURCE_USERNAME: 'root'
-      SPRING_DATASOURCE_PASSWORD: 'hapifhir2023'
-      SPRING_DATASOURCE_DRIVERCLASSNAME: 'org.postgresql.Driver'
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: 'ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgres94Dialect'
+      SPRING_CONFIG_LOCATION: "file:///data/hapi/application.yaml"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://hapi-db:5433/root"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "hapifhir2023"
+      SPRING_DATASOURCE_DRIVERCLASSNAME: "org.postgresql.Driver"
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgres94Dialect"
 
   hapi-db:
     image: "postgres:14.6"
@@ -27,12 +27,12 @@ services:
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready" ]
+      test: ["CMD-SHELL", "pg_isready"]
       interval: 20s
       timeout: 10s
       retries: 5
     command: -p 5433
-    
+
   hapi-fhir-bundle-signer:
     build:
       context: ./bundle-signer
@@ -40,14 +40,13 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: "production"
-      PROD_HAPI_FHIR: "http://lacpass.create.cl:8080"
+      PROD_HAPI_FHIR: "http://lacpass.create.cl:8080/fhir"
       DDCC_URL: "http://ddcc:4321/"
       EXTERNAL_HAPI_FHIR: "http://lacpass.create.cl:8080/fhir"
       PROD_PRIVATE_KEY_FILE: "./static/key.pem"
       ISSUER_COUNTRY_CODE: "XCL"
     volumes:
       - ./bundle-signer/static:/usr/src/app/static
-
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
@@ -65,7 +64,7 @@ services:
     networks:
       elastic:
         aliases:
-         - es
+          - es
     healthcheck:
       test: ["CMD", "curl", "-f", "http://es:9200"]
       interval: 1s
@@ -74,7 +73,6 @@ services:
     ports:
       - 127.0.0.1:9200:9200
     mem_reservation: 4g
-
 
   snowstorm:
     image: kaikewley/snowstorm:10.4.0-beta
@@ -87,10 +85,9 @@ services:
     networks:
       elastic:
         aliases:
-         - snowstorm
+          - snowstorm
     ports:
       - 8180:8080
-
 
   snowstorm-browser:
     image: snomedinternational/snomedct-browser:latest
@@ -145,17 +142,17 @@ services:
     networks:
       elastic:
         aliases:
-         - nginx
+          - nginx
 
   ddcc:
     container_name: ddcc-transactions-mediator
     image: censcl/ops-ddcc-transactions-mediator-lacpass-ips:v3.1
     environment:
-      FHIR_SERVER: 'http://hapi-fhir:8080/fhir/'
-      MATCHBOX_SERVER: 'http://resource-generation-service:8080/fhir/'
-      PRIVATE_KEY_FILE: '/app/cert-data/DSC01privkey.key'
-      PUBLIC_KEY_FILE: '/app/cert-data/DSCcert.pem'
-      COUNTRY_CODE: 'XCL'
+      FHIR_SERVER: "http://hapi-fhir:8080/fhir/"
+      MATCHBOX_SERVER: "http://resource-generation-service:8080/fhir/"
+      PRIVATE_KEY_FILE: "/app/cert-data/DSC01privkey.key"
+      PUBLIC_KEY_FILE: "/app/cert-data/DSCcert.pem"
+      COUNTRY_CODE: "XCL"
     volumes:
       - ./cert-data:/app/cert-data
     ports:
@@ -167,8 +164,8 @@ services:
     container_name: resource-generation-service
     image: censcl/ops-ddcc-resource-generation-service:v3.0
     ports:
-        - "8023:8080"
-  
+      - "8023:8080"
+
   gdhcn-validator-service:
     container_name: gdhcn-validator-service
     image: createchile/gdhcn-validator_backend:v1.1
