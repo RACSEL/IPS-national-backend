@@ -132,15 +132,20 @@ export const dashboardModalDetail = {
 		}
 		const concepts = Array.isArray(detail.concept) ? detail.concept : [];
 		const systemUrl = asText(detail.url, '');
-		const tokens = relationTokens(detail);
 		detail.previewConcepts = flattenConcepts(concepts);
 		detail.previewConceptTotal = concepts.length;
-		detail.previewValueSets = (this.valueSets || [])
-			.filter(vs => (systemUrl && (vs.url || '').includes(systemUrl)) || rowMatchesTokens(vs, tokens))
-			.slice(0, 8);
-		detail.previewConceptMaps = (this.conceptMaps || [])
-			.filter(cm => (systemUrl && (cm.url || '').includes(systemUrl)) || rowMatchesTokens(cm, tokens))
-			.slice(0, 8);
+
+		const [fullValueSets, fullConceptMaps] = await Promise.all([
+			this._getFullValueSets(),
+			this._getFullConceptMaps()
+		]);
+		detail.previewValueSets = fullValueSets.filter(vs =>
+			systemUrl && ((vs.compose && vs.compose.include) || []).some(inc => inc.system === systemUrl)
+		).slice(0, 8);
+		detail.previewConceptMaps = fullConceptMaps.filter(cm =>
+			systemUrl && (cm.group || []).some(g => g.source === systemUrl || g.target === systemUrl)
+		).slice(0, 8);
+
 		detail.previewCodeSamples = detail.previewConcepts
 			.filter(concept => concept.code)
 			.map(concept => ({

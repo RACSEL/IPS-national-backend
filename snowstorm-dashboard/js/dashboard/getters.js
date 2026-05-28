@@ -7,14 +7,9 @@ function matchesTableFilter(row, query) {
 }
 
 export const dashboardGetters = {
-	get conceptMapDeleteSupported() {
-		if (!this.capabilityStatement) return true;
-		const rest = (this.capabilityStatement.rest || [])[0];
-		if (!rest) return true;
-		const conceptMapRes = (rest.resource || []).find(r => r.type === 'ConceptMap');
-		if (!conceptMapRes) return true;
-		return (conceptMapRes.interaction || []).some(i => i.code === 'delete');
-	},
+	get conceptMapDeleteSupported() { return true; },
+	get codeSystemDeleteSupported() { return true; },
+	get valueSetDeleteSupported() { return true; },
 
 	get resourceCountText() {
 		if (this.tab === 'codesystem') {

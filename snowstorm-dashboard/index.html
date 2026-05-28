@@ -59,6 +59,21 @@
 					@click="loadCodeSystems()">
 					<i class="bi bi-arrow-clockwise"></i> Refresh CodeSystems
 				</button>
+				<span x-show="tab === 'codesystem'" class="me-2">
+					<label class="btn btn-outline-primary btn-sm mb-0" :class="uploadingPackage ? 'disabled' : ''" title="Upload a FHIR package (.tgz)">
+						<template x-if="!uploadingPackage">
+							<span><i class="bi bi-box-arrow-in-up"></i> Load Package</span>
+						</template>
+						<template x-if="uploadingPackage">
+							<span class="d-flex align-items-center gap-1">
+								<span class="spinner-border spinner-border-sm" role="status"></span> Uploading…
+							</span>
+						</template>
+						<input type="file" accept=".tgz,application/gzip,application/x-tar" class="d-none" :disabled="uploadingPackage" @change="onPackageFileSelected($event)">
+					</label>
+					<span x-show="uploadPackageSuccess" class="text-success small ms-2" x-text="uploadPackageSuccess"></span>
+					<span x-show="uploadPackageError" class="text-danger small ms-2" x-text="uploadPackageError"></span>
+				</span>
 				<button x-show="tab === 'valueset'" class="btn btn-outline-secondary btn-sm me-2"
 					@click="loadValueSets()">
 					<i class="bi bi-arrow-clockwise"></i> Refresh ValueSets
@@ -66,6 +81,10 @@
 				<button x-show="tab === 'conceptmap'" class="btn btn-outline-secondary btn-sm"
 					@click="loadConceptMaps()">
 					<i class="bi bi-arrow-clockwise"></i> Refresh ConceptMaps
+				</button>
+				<button class="btn btn-danger btn-sm ms-2"
+					@click="bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteAllModal')).show()">
+					<i class="bi bi-trash3"></i> Delete All
 				</button>
 			</div>
 		</div>
@@ -147,9 +166,16 @@
 							</td>
 							<td x-text="r.publisher"></td>
 							<td>
-								<button class="btn btn-sm btn-outline-primary" title="View" @click="viewDetail('codesystem', r.id)">
-									<i class="bi bi-eye"></i>
-								</button>
+								<div class="d-flex gap-1">
+									<button class="btn btn-sm btn-outline-primary" title="View" @click="viewDetail('codesystem', r.id)">
+										<i class="bi bi-eye"></i>
+									</button>
+									<span :title="codeSystemDeleteSupported ? 'Delete' : 'Operation not supported by server'" style="display: inline-block;">
+										<button class="btn btn-sm" :class="codeSystemDeleteSupported ? 'btn-outline-danger' : 'btn-outline-secondary'" :disabled="!codeSystemDeleteSupported" @click="confirmDeleteCodeSystem(r.id, r.title, r.url)">
+											<i class="bi bi-trash"></i>
+										</button>
+									</span>
+								</div>
 							</td>
 						</tr>
 					</template>
@@ -256,9 +282,16 @@
 							</td>
 							<td x-text="r.publisher"></td>
 							<td>
-								<button class="btn btn-sm btn-outline-primary" title="View" @click="viewDetail('valueset', r.id)">
-									<i class="bi bi-eye"></i>
-								</button>
+								<div class="d-flex gap-1">
+									<button class="btn btn-sm btn-outline-primary" title="View" @click="viewDetail('valueset', r.id)">
+										<i class="bi bi-eye"></i>
+									</button>
+									<span :title="valueSetDeleteSupported ? 'Delete' : 'Operation not supported by server'" style="display: inline-block;">
+										<button class="btn btn-sm" :class="valueSetDeleteSupported ? 'btn-outline-danger' : 'btn-outline-secondary'" :disabled="!valueSetDeleteSupported" @click="confirmDeleteValueSet(r.id, r.title, r.url)">
+											<i class="bi bi-trash"></i>
+										</button>
+									</span>
+								</div>
 							</td>
 						</tr>
 					</template>
@@ -1200,6 +1233,163 @@
 					<template x-if="deletingConceptMap">
 						<span class="d-flex align-items-center gap-1">
 							<span class="spinner-border spinner-border-sm" role="status"></span> Deleting...
+						</span>
+					</template>
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Delete CodeSystem Confirmation Modal -->
+<div class="modal fade" id="deleteCodeSystemModal" tabindex="-1" aria-labelledby="deleteCodeSystemModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="deleteCodeSystemModalLabel">Delete CodeSystem</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" :disabled="deletingCodeSystem || loadingDeleteDependents"></button>
+			</div>
+			<div class="modal-body">
+				<template x-if="loadingDeleteDependents">
+					<div class="text-center py-3">
+						<div class="spinner-border spinner-border-sm me-2" role="status"></div>
+						Analysing dependencies…
+					</div>
+				</template>
+				<template x-if="!loadingDeleteDependents">
+					<div>
+						<p>Are you sure you want to delete this CodeSystem?</p>
+						<p class="fw-bold" x-text="deleteCodeSystemTitle"></p>
+						<template x-if="deleteCodeSystemDependents && (deleteCodeSystemDependents.valueSets.length > 0 || deleteCodeSystemDependents.conceptMaps.length > 0)">
+							<div class="alert alert-warning py-2 small">
+								<p class="mb-1 fw-semibold">The following will also be cascade-deleted:</p>
+								<template x-if="deleteCodeSystemDependents.valueSets.length > 0">
+									<div>
+										<span class="fw-semibold" x-text="deleteCodeSystemDependents.valueSets.length + ' ValueSet(s):'"></span>
+										<ul class="mb-1 mt-1">
+											<template x-for="vs in deleteCodeSystemDependents.valueSets" :key="vs.id">
+												<li x-text="vs.title"></li>
+											</template>
+										</ul>
+									</div>
+								</template>
+								<template x-if="deleteCodeSystemDependents.conceptMaps.length > 0">
+									<div>
+										<span class="fw-semibold" x-text="deleteCodeSystemDependents.conceptMaps.length + ' ConceptMap(s):'"></span>
+										<ul class="mb-0 mt-1">
+											<template x-for="cm in deleteCodeSystemDependents.conceptMaps" :key="cm.id">
+												<li x-text="cm.title"></li>
+											</template>
+										</ul>
+									</div>
+								</template>
+							</div>
+						</template>
+						<template x-if="deleteCodeSystemDependents && deleteCodeSystemDependents.valueSets.length === 0 && deleteCodeSystemDependents.conceptMaps.length === 0">
+							<p class="text-muted small">No dependencies detected.</p>
+						</template>
+					</div>
+				</template>
+				<div x-show="deleteCodeSystemError" class="alert alert-danger py-2 small mt-2" x-text="deleteCodeSystemError"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="deletingCodeSystem || loadingDeleteDependents">Cancel</button>
+				<button type="button" class="btn btn-danger" @click="executeDeleteCodeSystem()" :disabled="deletingCodeSystem || loadingDeleteDependents">
+					<template x-if="!deletingCodeSystem"><span>Delete</span></template>
+					<template x-if="deletingCodeSystem">
+						<span class="d-flex align-items-center gap-1">
+							<span class="spinner-border spinner-border-sm" role="status"></span> Deleting…
+						</span>
+					</template>
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Delete ValueSet Confirmation Modal -->
+<div class="modal fade" id="deleteValueSetModal" tabindex="-1" aria-labelledby="deleteValueSetModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="deleteValueSetModalLabel">Delete ValueSet</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" :disabled="deletingValueSet || loadingDeleteDependents"></button>
+			</div>
+			<div class="modal-body">
+				<template x-if="loadingDeleteDependents">
+					<div class="text-center py-3">
+						<div class="spinner-border spinner-border-sm me-2" role="status"></div>
+						Analysing dependencies…
+					</div>
+				</template>
+				<template x-if="!loadingDeleteDependents">
+					<div>
+						<p>Are you sure you want to delete this ValueSet?</p>
+						<p class="fw-bold" x-text="deleteValueSetTitle"></p>
+						<template x-if="deleteValueSetDependents && deleteValueSetDependents.conceptMaps.length > 0">
+							<div class="alert alert-warning py-2 small">
+								<p class="mb-1 fw-semibold">The following will also be cascade-deleted:</p>
+								<span class="fw-semibold" x-text="deleteValueSetDependents.conceptMaps.length + ' ConceptMap(s):'"></span>
+								<ul class="mb-0 mt-1">
+									<template x-for="cm in deleteValueSetDependents.conceptMaps" :key="cm.id">
+										<li x-text="cm.title"></li>
+									</template>
+								</ul>
+							</div>
+						</template>
+						<template x-if="deleteValueSetDependents && deleteValueSetDependents.conceptMaps.length === 0">
+							<p class="text-muted small">No dependencies detected.</p>
+						</template>
+					</div>
+				</template>
+				<div x-show="deleteValueSetError" class="alert alert-danger py-2 small mt-2" x-text="deleteValueSetError"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="deletingValueSet || loadingDeleteDependents">Cancel</button>
+				<button type="button" class="btn btn-danger" @click="executeDeleteValueSet()" :disabled="deletingValueSet || loadingDeleteDependents">
+					<template x-if="!deletingValueSet"><span>Delete</span></template>
+					<template x-if="deletingValueSet">
+						<span class="d-flex align-items-center gap-1">
+							<span class="spinner-border spinner-border-sm" role="status"></span> Deleting…
+						</span>
+					</template>
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Delete All Confirmation Modal -->
+<div class="modal fade" id="deleteAllModal" tabindex="-1" aria-labelledby="deleteAllModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header bg-danger text-white">
+				<h5 class="modal-title" id="deleteAllModalLabel"><i class="bi bi-exclamation-triangle-fill me-2"></i>Delete All</h5>
+				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" :disabled="deletingAll"></button>
+			</div>
+			<div class="modal-body">
+				<template x-if="!deletingAll">
+					<div>
+						<p class="fw-bold text-danger">⚠️ This action cannot be undone.</p>
+						<p>All <strong>CodeSystems, ValueSets and ConceptMaps</strong> that are not native SNOMED CT resources will be deleted.</p>
+						<p class="text-muted small">SNOMED CT resources (URLs containing <code>http://snomed.info/sct</code>) will not be affected.</p>
+					</div>
+				</template>
+				<template x-if="deletingAll">
+					<div class="text-center py-2">
+						<div class="spinner-border spinner-border-sm me-2" role="status"></div>
+						<span x-text="deleteAllProgress || 'Processing…'"></span>
+					</div>
+				</template>
+				<div x-show="deleteAllError" class="alert alert-danger py-2 small mt-2" x-text="deleteAllError"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="deletingAll">Cancel</button>
+				<button type="button" class="btn btn-danger" @click="executeDeleteAll()" :disabled="deletingAll">
+					<template x-if="!deletingAll"><span><i class="bi bi-trash3 me-1"></i>Delete All</span></template>
+					<template x-if="deletingAll">
+						<span class="d-flex align-items-center gap-1">
+							<span class="spinner-border spinner-border-sm" role="status"></span> Deleting…
 						</span>
 					</template>
 				</button>
