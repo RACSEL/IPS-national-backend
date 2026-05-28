@@ -133,7 +133,7 @@ services:
     volumes:
       - ./fhir-terminology/connectathon-swagger.yaml:/usr/share/nginx/html/connectathon-swagger.yaml:ro
     environment:
-      - URL=http://lacpass.create.cl:8089/connectathon-swagger.yaml
+      - URL=./connectathon-swagger.yaml
       - VALIDATOR_URL=null
     networks:
       - elastic
