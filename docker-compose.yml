@@ -43,10 +43,10 @@ services:
       PROD_HAPI_FHIR: "http://lacpass.create.cl:8080/fhir"
       DDCC_URL: "http://ddcc:4321/"
       EXTERNAL_HAPI_FHIR: "http://lacpass.create.cl:8080/fhir"
-      PROD_PRIVATE_KEY_FILE: "./static/key.pem"
+      PROD_PRIVATE_KEY_FILE: "/run/secrets/dsc-private"
       ISSUER_COUNTRY_CODE: "XCL"
-    volumes:
-      - ./bundle-signer/static:/usr/src/app/static
+    secrets:
+      - dsc-private
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
@@ -148,17 +148,18 @@ services:
     container_name: ddcc-transactions-mediator
     image: censcl/ops-ddcc-transactions-mediator-lacpass-ips:v3.1
     environment:
-      FHIR_SERVER: "http://hapi-fhir:8080/fhir/"
-      MATCHBOX_SERVER: "http://resource-generation-service:8080/fhir/"
-      PRIVATE_KEY_FILE: "/app/cert-data/DSC01privkey.key"
-      PUBLIC_KEY_FILE: "/app/cert-data/DSCcert.pem"
-      COUNTRY_CODE: "XCL"
-    volumes:
-      - ./cert-data:/app/cert-data
+      FHIR_SERVER: 'http://hapi-fhir:8080/fhir/'
+      MATCHBOX_SERVER: 'http://resource-generation-service:8080/fhir/'
+      PRIVATE_KEY_FILE: '/run/secrets/dsc-private'
+      PUBLIC_KEY_FILE: '/run/secrets/dsc-public'
+      COUNTRY_CODE: 'XCL'
     ports:
       - "4321:4321"
     depends_on:
       - resource-generation-service
+    secrets:
+      - dsc-private
+      - dsc-public
 
   resource-generation-service:
     container_name: resource-generation-service
@@ -214,7 +215,9 @@ volumes:
 
 secrets:
   dsc-private:
-    file: cert-data/DSCpriv.key
+    file: cert-data/DSC.key
+  dsc-public:
+    file: cert-data/DSC.pem
   tls-key:
     file: cert-data/TLS.key
   tls-pem:
