@@ -2,6 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const axios = require('axios');
 const canonicalize = require('../utils/canonicalize');
+const { getErrorResponse } = require('../utils/http-errors');
 
 const router = express.Router();
 
@@ -29,7 +30,11 @@ router.get('/:bundleId', async (req, res) => {
       ),
     });
   }).catch((err) => {
-    res.status(err.response.status).send(err.response.data);
+    const { status, body } = getErrorResponse(
+      err,
+      'Unable to retrieve Bundle for signature verification',
+    );
+    res.status(status).send(body);
   });
 });
 

@@ -10,8 +10,31 @@ const { buildICVPQR } = require('../utils/icvp');
 const {
   buildICVPPayload, buildMeOWPayload, signHcert, createHCERTBundleResponse,
 } = require('../utils/hcert');
+const { getErrorMessage, getErrorResponse } = require('../utils/http-errors');
 
 const router = express.Router();
+
+async function getFhirResource(url, fallback) {
+  try {
+    const response = await axios.get(url);
+    return { data: response.data };
+  } catch (err) {
+    console.error(getErrorMessage(err, fallback));
+    const { status, body } = getErrorResponse(err, fallback, 400);
+    return { error: true, status, body };
+  }
+}
+
+function getMissingResources(resources) {
+  return Object.entries(resources)
+    .filter(([, resource]) => !resource)
+    .map(([name]) => name);
+}
+
+function getMissingResourcesMessage(bundleLabel, resources) {
+  const missingResources = getMissingResources(resources).join(', ');
+  return `${bundleLabel} is missing required resources: ${missingResources}`;
+}
 
 /*
  *  Will pass all request to FHIR server, but will sign all bundle requests
@@ -49,6 +72,7 @@ function addSignature(body, privateKey) {
 }
 
 async function validateIPS(ips) {
+  const fallback = 'Request body is not a valid IPS';
   try {
     const val = await axios.request({
       url: 'http://lacpass.create.cl:5002/api/ips-validator',
@@ -59,9 +83,10 @@ async function validateIPS(ips) {
     });
     return val.data;
   } catch (e) {
+    console.error(getErrorMessage(e, fallback));
     return {
       validate: false,
-      error: 'Request body is not a valid IPS',
+      error: getErrorMessage(e, fallback),
     };
   }
 }
@@ -190,14 +215,15 @@ router.all('/Bundle', async (req, res) => {
       });
     })
       .catch((err) => {
-        console.log('ERROR');
-        console.error(err);
-        // res.status(err.response.status);
-        // res.end(err.response.data);
+        const fallback = 'Unable to create signed Bundle transaction';
+        console.error(getErrorMessage(err, fallback));
+        const { status, body } = getErrorResponse(err, fallback);
+        res.status(status).send(body);
       });
   } catch (e) {
-    res.status(500);
-    res.end('ERROR');
+    console.error(getErrorMessage(e, 'Unexpected error creating signed Bundle transaction'));
+    const { status, body } = getErrorResponse(e, 'ERROR');
+    res.status(status).send(body);
   }
 });
 
@@ -209,11 +235,12 @@ router.get('/Bundle/:id/([\$])ddcc', async (req, res) => {
 
     const url = `${FHIR_URL}/Bundle/${req.params.id}`;
 
-    let ips = await axios.get(url).catch((err) => {
-      console.error(err);
-      return { error: true };
-    });
-    ips = ips.data;
+    const ipsResponse = await getFhirResource(url, 'Unable to retrieve IPS Bundle');
+    if (ipsResponse.error) {
+      res.status(ipsResponse.status).send(ipsResponse.body);
+      return;
+    }
+    const ips = ipsResponse.data;
     if (!ips) {
       res.status(400).send({ error: 'IPS is empty or not valid' });
       return;
@@ -231,7 +258,14 @@ router.get('/Bundle/:id/([\$])ddcc', async (req, res) => {
     let composition = ips.entry.find((e) => e.resource && e.resource.resourceType == 'Composition');
 
     if (!patient || !immunization || !organization || !composition) {
-      res.status(400).send({ error: 'IPS has no patient or immunization or organization or compoosition' });
+      res.status(400).send({
+        error: getMissingResourcesMessage('IPS', {
+          Patient: patient,
+          Immunization: immunization,
+          Organization: organization,
+          Composition: composition,
+        }),
+      });
       return;
     }
 
@@ -248,8 +282,9 @@ router.get('/Bundle/:id/([\$])ddcc', async (req, res) => {
     const resp = await axios.post(DDCC_URL, qr);
     res.status(resp.status).send(resp.data);
   } catch (e) {
-    res.status(500);
-    res.end('ERROR');
+    console.error(getErrorMessage(e, 'Unexpected error generating DDCC'));
+    const { status, body } = getErrorResponse(e, 'ERROR');
+    res.status(status).send(body);
   }
 });
 
@@ -260,11 +295,12 @@ router.get('/Bundle/:id/([\$])dvc', async (req, res) => {
 
     const url = `${FHIR_URL}/Bundle/${req.params.id}`;
 
-    let ips = await axios.get(url).catch((err) => {
-      console.error(err);
-      return { error: true };
-    });
-    ips = ips.data;
+    const ipsResponse = await getFhirResource(url, 'Unable to retrieve IPS Bundle');
+    if (ipsResponse.error) {
+      res.status(ipsResponse.status).send(ipsResponse.body);
+      return;
+    }
+    const ips = ipsResponse.data;
     if (!ips) {
       res.status(400).send({ error: 'IPS is empty or not valid' });
       return;
@@ -282,7 +318,14 @@ router.get('/Bundle/:id/([\$])dvc', async (req, res) => {
     let composition = ips.entry.find((e) => e.resource && e.resource.resourceType == 'Composition');
 
     if (!patient || !immunization || !organization || !composition) {
-      res.status(400).send({ error: 'IPS has no patient or immunization or organization or compoosition' });
+      res.status(400).send({
+        error: getMissingResourcesMessage('IPS', {
+          Patient: patient,
+          Immunization: immunization,
+          Organization: organization,
+          Composition: composition,
+        }),
+      });
       return;
     }
 
@@ -312,9 +355,9 @@ router.get('/Bundle/:id/([\$])dvc', async (req, res) => {
     const resp = await axios.post(`${DDCC_URL}icvp/`, bundle);
     res.status(resp.status).send(resp.data);
   } catch (e) {
-    console.error(e);
-    res.status(500);
-    res.end('ERROR');
+    console.error(getErrorMessage(e, 'Unexpected error generating DVC'));
+    const { status, body } = getErrorResponse(e, 'ERROR');
+    res.status(status).send(body);
   }
 });
 
@@ -325,11 +368,12 @@ router.get('/Bundle/:id/([\$])icvp', async (req, res) => {
 
     const url = `${FHIR_URL}/Bundle/${req.params.id}`;
 
-    let ips = await axios.get(url).catch((err) => {
-      console.error(err);
-      return { error: true };
-    });
-    ips = ips.data;
+    const ipsResponse = await getFhirResource(url, 'Unable to retrieve IPS Bundle');
+    if (ipsResponse.error) {
+      res.status(ipsResponse.status).send(ipsResponse.body);
+      return;
+    }
+    const ips = ipsResponse.data;
     if (!ips) {
       res.status(400).send({ error: 'IPS is empty or not valid' });
       return;
@@ -343,7 +387,12 @@ router.get('/Bundle/:id/([\$])icvp', async (req, res) => {
       : ips.entry.find((e) => e.resource && e.resource.resourceType == 'Immunization');
 
     if (!patient || !immunization) {
-      res.status(400).send({ error: 'IPS has no patient or immunization' });
+      res.status(400).send({
+        error: getMissingResourcesMessage('IPS', {
+          Patient: patient,
+          Immunization: immunization,
+        }),
+      });
       return;
     }
 
@@ -375,9 +424,9 @@ router.get('/Bundle/:id/([\$])icvp', async (req, res) => {
     const resp = await axios.post(`${DDCC_URL}icvp/`, bundle);
     res.status(resp.status).send(resp.data);
   } catch (e) {
-    console.error(e);
-    res.status(500);
-    res.end('ERROR');
+    console.error(getErrorMessage(e, 'Unexpected error generating ICVP'));
+    const { status, body } = getErrorResponse(e, 'ERROR');
+    res.status(status).send(body);
   }
 });
 
@@ -389,11 +438,12 @@ router.get('/Bundle/:id/([$])icvp2', async (req, res) => {
 
     const url = `${FHIR_URL}/Bundle/${req.params.id}`;
 
-    let ips = await axios.get(url).catch((err) => {
-      console.error(err);
-      return { error: true };
-    });
-    ips = ips.data;
+    const ipsResponse = await getFhirResource(url, 'Unable to retrieve IPS Bundle');
+    if (ipsResponse.error) {
+      res.status(ipsResponse.status).send(ipsResponse.body);
+      return;
+    }
+    const ips = ipsResponse.data;
     if (!ips) {
       res.status(400).send({ error: 'IPS is empty or not valid' });
       return;
@@ -407,7 +457,12 @@ router.get('/Bundle/:id/([$])icvp2', async (req, res) => {
       : ips.entry.find((e) => e.resource && e.resource.resourceType === 'Immunization');
 
     if (!patient || !immunization) {
-      res.status(400).send({ error: 'IPS has no patient or immunization' });
+      res.status(400).send({
+        error: getMissingResourcesMessage('IPS', {
+          Patient: patient,
+          Immunization: immunization,
+        }),
+      });
       return;
     }
 
@@ -420,15 +475,15 @@ router.get('/Bundle/:id/([$])icvp2', async (req, res) => {
       const response = createHCERTBundleResponse(hc1);
       res.json(response);
     } catch (err) {
-      console.error(err);
+      console.error(getErrorMessage(err, 'IPS has missing information to create ICVP'));
       res.status(422).send({
-        error: err.message,
+        error: getErrorMessage(err, 'IPS has missing information to create ICVP'),
       });
     }
   } catch (e) {
-    console.error(e);
-    res.status(500);
-    res.end('ERROR');
+    console.error(getErrorMessage(e, 'Unexpected error generating ICVP'));
+    const { status, body } = getErrorResponse(e, 'ERROR');
+    res.status(status).send(body);
   }
 });
 
@@ -440,11 +495,12 @@ router.get('/Bundle/:id/([$])meow', async (req, res) => {
 
     const url = `${FHIR_URL}/Bundle/${req.params.id}`;
 
-    let bundle = await axios.get(url).catch((err) => {
-      console.error(err);
-      return { error: true };
-    });
-    bundle = bundle.data;
+    const bundleResponse = await getFhirResource(url, 'Unable to retrieve Bundle');
+    if (bundleResponse.error) {
+      res.status(bundleResponse.status).send(bundleResponse.body);
+      return;
+    }
+    const bundle = bundleResponse.data;
     if (!bundle) {
       res.status(400).send({ error: 'Bundle is empty or not valid' });
       return;
@@ -458,7 +514,12 @@ router.get('/Bundle/:id/([$])meow', async (req, res) => {
       : bundle.entry.find((e) => e.resource && e.resource.resourceType === 'MedicationStatement')?.resource;
 
     if (!patient || !medicationStatement) {
-      res.status(400).send({ error: 'Bundle has no patient or medication statement' });
+      res.status(400).send({
+        error: getMissingResourcesMessage('Bundle', {
+          Patient: patient,
+          MedicationStatement: medicationStatement,
+        }),
+      });
       return;
     }
 
@@ -472,15 +533,15 @@ router.get('/Bundle/:id/([$])meow', async (req, res) => {
       );
       res.json(response);
     } catch (err) {
-      console.error(err);
+      console.error(getErrorMessage(err, 'Bundle has missing information to create MeOW'));
       res.status(422).send({
-        error: err.message,
+        error: getErrorMessage(err, 'Bundle has missing information to create MeOW'),
       });
     }
   } catch (e) {
-    console.error(e);
-    res.status(500);
-    res.end('ERROR');
+    console.error(getErrorMessage(e, 'Unexpected error generating MeOW'));
+    const { status, body } = getErrorResponse(e, 'ERROR');
+    res.status(status).send(body);
   }
 });
 
@@ -500,11 +561,14 @@ router.all('/*', async (req, res) => {
       res.status(response.status).send(response.data);
     })
       .catch((err) => {
-        res.status(err.response.status).send(err.response.data);
+        const fallback = 'Unable to forward request to FHIR server';
+        const { status, body } = getErrorResponse(err, fallback);
+        res.status(status).send(body);
       });
   } catch (e) {
-    res.status(500);
-    res.end('ERROR');
+    console.error(getErrorMessage(e, 'Unexpected error forwarding request to FHIR server'));
+    const { status, body } = getErrorResponse(e, 'ERROR');
+    res.status(status).send(body);
   }
 });
 
