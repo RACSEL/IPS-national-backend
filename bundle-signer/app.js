@@ -31,6 +31,7 @@ app.set('hapiFhir', config[env]?.hapiFhir);
 app.set('ddccURL', config[env]?.ddccURL);
 app.set('externalFhir', config[env]?.externalFhir);
 app.set('issuerCountryCode', config[env]?.issuerCountryCode);
+app.set('hcertKid', config[env]?.hcertKid);
 app.set('privateKey', signature.privateKey);
 app.set('publicKey', signature.publicKey);
 

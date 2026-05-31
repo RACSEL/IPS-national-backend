@@ -45,6 +45,7 @@ services:
       EXTERNAL_HAPI_FHIR: "http://lacpass.create.cl:8080/fhir"
       PROD_PRIVATE_KEY_FILE: "/run/secrets/dsc-private"
       ISSUER_COUNTRY_CODE: "XCL"
+      DSC_KID: "lkxZC7WEOIs="
     secrets:
       - dsc-private
 
