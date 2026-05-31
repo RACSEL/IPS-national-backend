@@ -16,7 +16,7 @@ const app = express();
 
 app.use(logger('dev'));
 app.use(cors());
-app.use(express.json({limit: '5mb'}));
+app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
@@ -30,6 +30,7 @@ console.log(config, env);
 app.set('hapiFhir', config[env]?.hapiFhir);
 app.set('ddccURL', config[env]?.ddccURL);
 app.set('externalFhir', config[env]?.externalFhir);
+app.set('issuerCountryCode', config[env]?.issuerCountryCode);
 app.set('privateKey', signature.privateKey);
 app.set('publicKey', signature.publicKey);
 
