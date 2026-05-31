@@ -184,8 +184,8 @@ services:
       - TNG_TLS_PEM=/run/secrets/tls-pem
       - TNG_TLS_KEY=/run/secrets/tls-key
       - TNG_DSC_PRIVATEKEY=/run/secrets/dsc-private
-      - TNG_COUNTRY=XJ
-      - TNG_DSC_PRIVATEKEY_KID=I1BAX8FATLs=
+      - TNG_COUNTRY=XL
+      - TNG_DSC_PRIVATEKEY_KID=lkxZC7WEOIs=
       - GDHCN_BASEURL=http://lacpass.create.cl:8182
     networks:
       - spring-postgres
