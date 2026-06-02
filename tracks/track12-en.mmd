@@ -1,0 +1,63 @@
+sequenceDiagram
+    autonumber
+    participant HA as HIS_Country_A
+    participant NA as Node_Country_A
+    %% participant NBA as Notification Broker A
+    %% participant NBB as Notification Broker B
+    participant NB as Node_Country_B
+    participant HB as HIS_Country_B
+
+    %% Note over NA, NB: Step 0: Subscription
+
+    %% NB->>NBA: ITI 110: Resource Subscription A
+    %% NA->>NBB: ITI 110: Resource Subscription B
+
+    Note over HA, HB: Teleconsultation (Doctor to Doctor)
+    
+    Note over HA, NA: Step 1: Generate Order
+
+    HA->>HA: Create Order
+    HA->>NA: Persist ServiceRequest <G>
+    NA->>HA: ACK
+    HA->>NA: ITI-65: Persist IPS_A <G>
+    NA->>HA: ACK
+    %% NA->>NBA: ITI 111: Resource Publish A
+    %% NBA->>NB: ITI 112: Resource Notify A
+    
+    Note over NA, HB: Step 2: Teleconsultation Response Country B
+
+    HB->>NB: Check pending ServiceRequests
+    NB->>NA: Search for active ServiceRequests <G>
+    NA->>NB: Return ServiceRequest
+    
+    NB->>NA: ITI-68: Retrieve IPS_A <G>
+    NA->>NB: Return IPS_A
+
+    NB->>HB: Send ServiceRequest + IPS_A
+
+    
+    Note right of HB: Specialist Evaluation
+    HB->>HB: Generate Clinical Report
+    HB->>NB: ITI-65: Save Report (Consultation Note) <G>
+    NB->>HB: ACK
+
+    %% NB->>NBB: ITI 111: Resource Publish B
+    %% NBB->>NA: ITI 112: Resource Notify B
+    
+    Note over HA, NB: Step 3: View Teleconsultation Response Country A
+
+    HA->>NA: Check Report results
+
+    NA->>NB: ITI-67: Search for Report (Consultation Note) <G>
+    NB->>NA: Return Document Reference for Report (Consultation Note)
+    
+    NA->>NB: ITI-68: Retrieve Report (Consultation Note) <G>
+    NB->>NA: Return Report (Consultation Note)
+
+    NA->>HA: Send Report (Consultation Note)
+
+    HA->>HA: View Report (Consultation Note)
+    Note over HA: Electronic Health Record Update
+
+    HA->>NA: Mark ServiceRequest as completed
+    NA->>HA: ACK

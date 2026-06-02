@@ -1,0 +1,222 @@
+{
+  "resourceType": "Bundle",
+  "id": "iti65-transaction-medication",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a73",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-example",
+        "identifier": [
+          {
+            "system": "http://hospital.example.org",
+            "value": "12345"
+          }
+        ],
+        "name": [
+          {
+            "family": "Doe",
+            "given": [
+              "John"
+            ]
+          }
+        ],
+        "gender": "male",
+        "birthDate": "1970-01-01"
+      },
+      "request": {
+        "method": "POST",
+        "url": "Patient"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a80",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "status": "current",
+        "docStatus": "final",
+        "type": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "56445-0",
+              "display": "Medication summary"
+            }
+          ],
+          "text": "Medication Overview"
+        },
+        "subject": {
+          "reference": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a73"
+        },
+        "date": "2025-06-17T18:36:18+00:00",
+        "author": [
+          {
+            "display": "Dra. Especialista"
+          }
+        ],
+        "description": "Medication Overview - Patient Medication Summary",
+        "content": [
+          {
+            "attachment": {
+              "contentType": "application/fhir+json",
+              "url": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a71"
+            }
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "DocumentReference"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a71",
+      "resource": {
+        "resourceType": "Bundle",
+        "id": "medication-overview-example",
+        "meta": {
+          "profile": [
+            "http://profiles.ihe.net/PHARM/MEOW/StructureDefinition/MedicationOverview"
+          ]
+        },
+        "identifier": {
+          "system": "urn:ietf:rfc:3986",
+          "value": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a71"
+        },
+        "type": "document",
+        "timestamp": "2025-06-17T18:36:18+00:00",
+        "entry": [
+          {
+            "fullUrl": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a72",
+            "resource": {
+              "resourceType": "Composition",
+              "id": "composition-example",
+              "meta": {
+                "profile": [
+                  "http://profiles.ihe.net/PHARM/MEOW/StructureDefinition/MedicationOverviewComposition"
+                ]
+              },
+              "status": "final",
+              "type": {
+                "coding": [
+                  {
+                    "system": "http://loinc.org",
+                    "code": "56445-0",
+                    "display": "Medication summary"
+                  }
+                ]
+              },
+              "subject": {
+                "reference": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a73"
+              },
+              "date": "2025-06-17T18:36:18+00:00",
+              "author": [
+                {
+                  "reference": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a73"
+                }
+              ],
+              "title": "Medication Overview"
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a73",
+            "resource": {
+              "resourceType": "Patient",
+              "id": "patient-example",
+              "identifier": [
+                {
+                  "system": "http://hospital.example.org",
+                  "value": "12345"
+                }
+              ],
+              "name": [
+                {
+                  "family": "Doe",
+                  "given": [
+                    "John"
+                  ]
+                }
+              ],
+              "gender": "male",
+              "birthDate": "1970-01-01"
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a74",
+            "resource": {
+              "resourceType": "MedicationStatement",
+              "id": "medication-statement-1",
+              "status": "active",
+              "medicationCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://snomed.info/sct",
+                    "code": "376834005",
+                    "display": "Atorvastatin 20 mg oral tablet"
+                  }
+                ]
+              },
+              "subject": {
+                "reference": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a73"
+              },
+              "effectivePeriod": {
+                "start": "2025-01-01",
+                "end": "2025-12-31"
+              },
+              "dateAsserted": "2025-06-17T18:36:18+00:00",
+              "dosage": [
+                {
+                  "text": "20 mg daily"
+                }
+              ],
+              "reasonCode": [
+                {
+                  "text": "Hypercholesterolemia"
+                }
+              ]
+            }
+          },
+          {
+            "fullUrl": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a75",
+            "resource": {
+              "resourceType": "MedicationStatement",
+              "id": "medication-statement-2",
+              "status": "active",
+              "medicationCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://snomed.info/sct",
+                    "code": "387013003",
+                    "display": "Aspirin 81 mg oral tablet"
+                  }
+                ]
+              },
+              "subject": {
+                "reference": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a73"
+              },
+              "effectivePeriod": {
+                "start": "2025-01-01"
+              },
+              "dateAsserted": "2025-06-17T18:36:18+00:00",
+              "dosage": [
+                {
+                  "text": "81 mg daily"
+                }
+              ],
+              "reasonCode": [
+                {
+                  "text": "Prophylaxis"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Bundle"
+      }
+    }
+  ]
+}

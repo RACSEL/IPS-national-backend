@@ -1,0 +1,14 @@
+{
+  "resourceType": "Organization",
+  "id": "pais-panama",
+  "identifier": [
+    {
+      "system": "https://minsa.gob.pa/organizaciones",
+      "value": "PA-MINSA"
+    }
+  ],
+  "name": "Ministerio de Salud - República de Panamá",
+  "alias": [
+    "National Node B"
+  ]
+}

@@ -1,0 +1,56 @@
+sequenceDiagram
+    autonumber
+    participant IR as IR_Country_A
+    participant MPI as MPI
+    participant TS as Terminology
+    participant NA as Node_Country_A
+    participant AP as Patient_App
+    participant W as Wallet
+    participant ICVP as ICVP_Service
+    participant HB as HIS_Country_B
+    participant ITB as ITB
+    participant TN as GDHCN
+
+    Note over IR, NA: Step 0: Generate IPS
+    IR->>MPI: ITI-78 <G>
+    MPI->>IR: Return patient
+
+    IR->>TS: ITI-98 / ITI-101 <G>
+    TS->>IR: Return terminology
+
+    IR->>IR: Create ICVP IPS
+    IR->>NA: ITI-65: Save ICVP IPS <G>
+    NA->>IR: ACK
+
+    Note over NA, ICVP: Step 1: Generate ICVP QR
+    AP->>NA: ITI-67: Request ICVP IPS <G>
+    NA->>AP: Return document reference
+
+    AP->>NA: ITI-68: Retrieve ICVP IPS <G>
+    NA->>AP: Return ICVP IPS
+
+    AP->>AP: Select vaccine
+
+    AP->>ICVP: Create ICVP QR
+    ICVP->>AP: ICVP QR Generated
+
+
+    opt Optional
+        AP-->>W: Send ICVP
+    end
+
+    Note over AP, TN: Step 2: Verification in Country B
+
+    Note over AP, W: Present QR (from App or Wallet)
+    AP->>HB: Present ICVP QR
+    opt Optional
+        W-->>HB: Present ICVP QR
+    end
+    HB->>TN: Validate Signature
+    TN->>HB: Signature OK
+
+    HB->>ITB: Validate ICVP QR
+    ITB->>HB: Validation OK
+
+    HB->>HB: View ICVP
+    Note right of HB: Successful Verification
