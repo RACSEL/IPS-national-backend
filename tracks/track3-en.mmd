@@ -1,0 +1,57 @@
+sequenceDiagram
+    autonumber
+    participant IR as HIS_Country_A
+    participant MPI as MPI
+    participant TS as Terminology
+    participant NA as Node_Country_A
+    participant AP as Patient_App
+    participant W as Wallet
+    participant P as Prescription_Service
+    participant HB as Pharmacy_Country_B
+    participant ITB as ITB
+    participant TN as GDHCN
+
+    Note over IR, NA: Step 0: Generate Medication Overview
+    IR->>MPI: ITI-78 <G>
+    MPI->>IR: Return patient
+
+    IR->>TS: ITI-98 / ITI-101 <G>
+    TS->>IR: Return terminology
+
+    IR->>IR: Create Medication Overview
+
+    IR->>NA: ITI-65: Save Medication Overview <G>
+    NA->>IR: OK
+
+    Note over NA, P: Step 1: Generate Medication HCERT QR
+    AP->>NA: ITI-67: Search Medication Overview <G>
+    NA->>AP: Return Medication Overview References
+
+    AP->>NA: ITI-68: Retrieve Medication Overview <G>
+    NA->>AP: Return Medication Overview
+
+    AP->>AP: Select medication
+
+    AP->>P: Create Medication HCERT QR
+    P->>AP: Medication HCERT QR Generated
+
+
+    opt Optional
+        AP-->>W: Send Medication HCERT QR
+    end
+
+    Note over AP, TN: Step 2: Verification in Country B
+
+    Note over AP, HB: Present QR (from App or Wallet)
+    AP->>HB: Present Medication HCERT QR
+    opt Optional
+        W-->>HB: Present Medication HCERT QR
+    end
+    HB->>TN: Validate Signature
+    TN->>HB: Signature OK
+
+    HB->>ITB: Validate Medication HCERT QR
+    ITB->>HB: Validation OK
+
+    HB->>HB: View Medication
+    Note right of HB: Successful Verification
