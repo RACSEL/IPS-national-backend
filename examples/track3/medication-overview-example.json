@@ -42,7 +42,33 @@
             "reference": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a73"
           }
         ],
-        "title": "Medication Overview"
+        "title": "Medication Overview",
+        "section": [
+          {
+            "title": "Medicamentos",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "55112-7",
+                  "display": "Document summary"
+                }
+              ]
+            },
+            "text": {
+              "status": "generated",
+              "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Resumen de medicamentos</p></div>"
+            },
+            "entry": [
+              {
+                "reference": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a74"
+              },
+              {
+                "reference": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a75"
+              }
+            ]
+          }
+        ]
       }
     },
     {
@@ -78,14 +104,16 @@
           "coding": [
             {
               "system": "http://snomed.info/sct",
-              "code": "376834005",
-              "display": "Atorvastatin 20 mg oral tablet"
+              "code": "1222004",
+              "display": "Metronidazole-containing product"
             }
-          ]
+          ],
+          "text": "Metronidazole-containing product"
         },
         "subject": {
           "reference": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a73"
         },
+        "effectiveDateTime": "2025-01-01",
         "effectivePeriod": {
           "start": "2025-01-01",
           "end": "2025-12-31"
@@ -93,12 +121,15 @@
         "dateAsserted": "2025-06-17T18:36:18+00:00",
         "dosage": [
           {
-            "text": "20 mg daily"
+            "text": "500 mg daily",
+            "route": {
+              "text": "Oral"
+            }
           }
         ],
         "reasonCode": [
           {
-            "text": "Hypercholesterolemia"
+            "text": "Infection"
           }
         ]
       }
@@ -113,26 +144,31 @@
           "coding": [
             {
               "system": "http://snomed.info/sct",
-              "code": "387013003",
-              "display": "Aspirin 81 mg oral tablet"
+              "code": "796001",
+              "display": "Digoxin-containing product"
             }
-          ]
+          ],
+          "text": "Digoxin-containing product"
         },
         "subject": {
           "reference": "urn:uuid:68c15694-52f1-4171-bc01-e63d666d2a73"
         },
+        "effectiveDateTime": "2025-01-01",
         "effectivePeriod": {
           "start": "2025-01-01"
         },
         "dateAsserted": "2025-06-17T18:36:18+00:00",
         "dosage": [
           {
-            "text": "81 mg daily"
+            "text": "0.125 mg daily",
+            "route": {
+              "text": "Oral"
+            }
           }
         ],
         "reasonCode": [
           {
-            "text": "Prophylaxis"
+            "text": "Heart failure"
           }
         ]
       }
