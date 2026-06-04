@@ -4,24 +4,9 @@ const base45 = require('base45');
 const pako = require('pako');
 
 /**
- * Derives KID from Private Key
- */
-function getKid(privateKeyPem) {
-  try {
-    const privateKey = crypto.createPrivateKey(privateKeyPem);
-    const publicKey = crypto.createPublicKey(privateKey);
-    const publicKeyDer = publicKey.export({ type: 'spki', format: 'der' });
-    return crypto.createHash('sha256').update(publicKeyDer).digest().slice(0, 8);
-  } catch (err) {
-    console.error('Error deriving KID:', err.message);
-    return Buffer.from('default_kid');
-  }
-}
-
-/**
  * Signs a payload and returns HC1 string
  */
-function signHcert(payload, privateKeyPem, issuer = 'XX', subclaim = -6, expirationMonths = 12) {
+function signHcert(payload, privateKeyPem, issuer = 'XX', kid = 'default_kid', subclaim = -6, expirationMonths = 12) {
   const now = Math.floor(Date.now() / 1000);
   const exp = now + (expirationMonths * 30 * 24 * 60 * 60);
 
@@ -38,13 +23,13 @@ function signHcert(payload, privateKeyPem, issuer = 'XX', subclaim = -6, expirat
   const cborPayload = cbor.encode(cwtMap);
 
   // 2. Prepare COSE Headers
-  const kid = getKid(privateKeyPem);
+  const kidBuffer = Buffer.isBuffer(kid) ? kid : Buffer.from(kid, 'base64');
 
   // Protected header: alg: -7 (ES256)
   const protectedHeader = cbor.encode(new Map([[1, -7]]));
 
   // Unprotected header: kid: 4
-  const unprotectedHeader = new Map([[4, kid]]);
+  const unprotectedHeader = new Map([[4, kidBuffer]]);
 
   // 3. Create Signature Structure (Sig_structure)
   const sigStructure = cbor.encode([

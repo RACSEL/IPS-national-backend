@@ -435,6 +435,7 @@ router.get('/Bundle/:id/([$])icvp2', async (req, res) => {
     const FHIR_URL = req.app.get('hapiFhir');
     const privateKey = req.app.get('privateKey');
     const issuerCountryCode = req.app.get('issuerCountryCode');
+    const hcertKid = req.app.get('hcertKid');
 
     const url = `${FHIR_URL}/Bundle/${req.params.id}`;
 
@@ -471,7 +472,7 @@ router.get('/Bundle/:id/([$])icvp2', async (req, res) => {
 
     try {
       const payload = buildICVPPayload(patient, immunization);
-      const hc1 = signHcert(payload, privateKey, issuerCountryCode);
+      const hc1 = signHcert(payload, privateKey, issuerCountryCode, hcertKid);
       const response = createHCERTBundleResponse(hc1);
       res.json(response);
     } catch (err) {
@@ -492,6 +493,7 @@ router.get('/Bundle/:id/([$])meow', async (req, res) => {
     const FHIR_URL = req.app.get('hapiFhir');
     const privateKey = req.app.get('privateKey');
     const issuerCountryCode = req.app.get('issuerCountryCode');
+    const hcertKid = req.app.get('hcertKid');
 
     const url = `${FHIR_URL}/Bundle/${req.params.id}`;
 
@@ -525,7 +527,7 @@ router.get('/Bundle/:id/([$])meow', async (req, res) => {
 
     try {
       const payload = buildMeOWPayload(patient, medicationStatement);
-      const hc1 = signHcert(payload, privateKey, issuerCountryCode, -7);
+      const hc1 = signHcert(payload, privateKey, issuerCountryCode, hcertKid, -7);
       const response = createHCERTBundleResponse(
         hc1,
         'meow',
