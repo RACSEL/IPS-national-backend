@@ -185,8 +185,10 @@ function buildMeOWPayload(patient, medicationStatement) {
   if (medicationStatement.dosage?.[0]?.text) {
     treatmentLine.d = medicationStatement.dosage[0].text;
   }
-  if (medicationStatement.reasonCode?.[0]?.text) {
-    treatmentLine.r = medicationStatement.reasonCode[0].text;
+
+  const medicationDisplay = medicationStatement.medicationCodeableConcept?.coding?.[0]?.display || medicationStatement.medicationCodeableConcept?.text;
+  if (medicationDisplay) {
+    treatmentLine.r = medicationDisplay;
   }
 
   // Adherence status
